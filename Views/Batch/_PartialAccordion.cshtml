@@ -1,0 +1,104 @@
+﻿<div class="container mb-4">
+
+    <!-- Fila de filtros y acciones -->
+    <div class="row g-3 align-items-center mb-4">
+
+        <!-- Datepicker -->
+        <div class="col-md-2">
+            <input type="date" class="form-control" />
+        </div>
+
+        <!-- Select Turno -->
+        <div class="col-md-2">
+            <select class="form-select">
+                <option selected disabled>Turno</option>
+                <option value="1">Turno 1</option>
+                <option value="2">Turno 2</option>
+                <option value="3">Turno 3</option>
+            </select>
+        </div>
+
+        <!-- Select Estatus -->
+        <div class="col-md-3">
+            <select class="form-select">
+                <option selected disabled>Estatus</option>
+                <option value="pendientes">Pendientes</option>
+                <option value="rechazados">Rechazados</option>
+                <option value="aceptados">Aceptados</option>
+                <option value="rfid">RFID Asignado</option>
+            </select>
+        </div>
+
+        <!-- Botón azul -->
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Buscar <i class="bi bi-search"></i></button>
+        </div>
+
+        <!-- Input buscar -->
+        <div class="col-md-3">
+            <input type="text" class="form-control" placeholder="Buscar..." />
+        </div>
+    </div>
+
+    <!-- Accordion -->
+    <div class="accordion" id="accordionExample">
+
+        <!-- Amarillo -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button bg-warning text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Accordion Amarillo
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    Contenido estático amarillo.
+                </div>
+            </div>
+        </div>
+
+        <!-- Rojo -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button bg-danger text-white collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Accordion Rojo
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    Contenido estático rojo.
+                </div>
+            </div>
+        </div>
+
+        <!-- Verde -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button bg-success text-white collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Accordion Verde
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    Contenido estático verde.
+                </div>
+            </div>
+        </div>
+
+        <!-- Gris -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button bg-secondary text-white collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                    Accordion Gris
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    Contenido estático gris.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>

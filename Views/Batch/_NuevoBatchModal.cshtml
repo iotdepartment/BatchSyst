@@ -1,0 +1,164 @@
+﻿<div class="modal fade" id="nuevoBatchModal" tabindex="-1" aria-labelledby="nuevoBatchLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nuevoBatchLabel">Nuevo Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Componentes -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-primary btn-lg w-100 p-4"
+                                data-componente="1"
+                                onclick="seleccionarComponente(this)">
+                            20RB
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary btn-lg w-100 p-4"
+                                data-componente="2"
+                                onclick="seleccionarComponente(this)">
+                            22RB
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-success btn-lg w-100 p-4"
+                                data-componente="3"
+                                onclick="seleccionarComponente(this)">
+                            24RB
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-danger btn-lg w-100 p-4"
+                                data-componente="4"
+                                onclick="seleccionarComponente(this)">
+                            Z3511
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-warning btn-lg w-100 p-4"
+                                data-componente="5"
+                                onclick="seleccionarComponente(this)">
+                            FBACM70
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info btn-lg w-100 p-4"
+                                data-componente="6"
+                                onclick="seleccionarComponente(this)">
+                            Z3881
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-dark btn-lg w-100 p-4"
+                                data-componente="7"
+                                onclick="seleccionarComponente(this)">
+                            FABAEM70
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-success btn-lg w-100 p-4"
+                                data-componente="8"
+                                onclick="seleccionarComponente(this)">
+                            Z143
+                        </button>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Líneas -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info btn-lg w-100 p-4"
+                                data-linea="A"
+                                onclick="seleccionarLinea(this)">
+                            Linea 1
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info btn-lg w-100 p-4"
+                                data-linea="B"
+                                onclick="seleccionarLinea(this)">
+                            Linea 2
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info btn-lg w-100 p-4"
+                                data-linea="C"
+                                onclick="seleccionarLinea(this)">
+                            Linea 3
+                        </button>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Botón Guardar -->
+                <div class="row mt-3">
+                    <div class="col-md-12 text-center">
+                        <button id="btnGuardarBatch" class="btn btn-success btn-lg px-5" disabled onclick="guardarBatch()">
+                            Guardar Batch
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let componenteSeleccionado = null;
+    let lineaSeleccionada = null;
+
+    function seleccionarComponente(button) {
+        // resetear estilos
+        document.querySelectorAll("[data-componente]").forEach(b => b.classList.remove("active", "btn-selected"));
+        // marcar seleccionado
+        button.classList.add("active", "btn-selected");
+        componenteSeleccionado = button.getAttribute("data-componente");
+        habilitarGuardar();
+    }
+
+    function seleccionarLinea(button) {
+        document.querySelectorAll("[data-linea]").forEach(b => b.classList.remove("active", "btn-selected"));
+        button.classList.add("active", "btn-selected");
+        lineaSeleccionada = button.getAttribute("data-linea");
+        habilitarGuardar();
+    }
+
+    function habilitarGuardar() {
+        if (componenteSeleccionado && lineaSeleccionada) {
+            document.getElementById("btnGuardarBatch").disabled = false;
+        }
+    }
+
+    function guardarBatch() {
+        fetch('/Batch/CrearBatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ componenteId: componenteSeleccionado, linea: lineaSeleccionada })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error al crear el batch');
+            }
+        });
+    }
+</script>
+
+<style>
+    /* Estilo visual para botón seleccionado */
+    .btn-selected {
+        border: 3px solid #000;
+        opacity: 0.85;
+    }
+</style>

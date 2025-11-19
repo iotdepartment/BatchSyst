@@ -1,0 +1,38 @@
+﻿@model Batch.Models.Tolerancia
+
+@{
+    ViewData["Title"] = "Ingresar Tolerancia";
+}
+
+<h2>Ingresar Tolerancia</h2>
+
+<form asp-action="Create" method="post" class="row g-3">
+    <div class="col-md-6">
+
+            <label asp-for="ComponenteId" class="form-label"></label>
+            <select asp-for="ComponenteId" class="form-select"
+                    asp-items="ViewBag.ComponenteId"></select>
+            <span asp-validation-for="ComponenteId" class="text-danger"></span>
+
+
+        <label asp-for="Prueba" class="form-label"></label>
+        <input asp-for="Prueba" class="form-control" />
+
+
+
+        <label asp-for="Max" class="form-label"></label>
+        <input asp-for="Max" class="form-control" type="number" step="0.01" />
+ 
+
+        <label asp-for="Min" class="form-label"></label>
+        <input asp-for="Min" class="form-control" type="number" step="0.01" />
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+</form>
+
