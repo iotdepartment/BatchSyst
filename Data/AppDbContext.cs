@@ -22,14 +22,31 @@ namespace Batch.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // -------------------------------
+            // Componente
+            // -------------------------------
             modelBuilder.Entity<Componente>(entity =>
             {
                 entity.ToTable("Componentes");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.BatchCar).HasMaxLength(50);
+
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.BatchCar)
+                      .HasMaxLength(50);
+
+                // Relación con Tolerancias
+                entity.HasMany(e => e.Tolerancias)
+                      .WithOne(t => t.Componente)
+                      .HasForeignKey(t => t.ComponenteId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // -------------------------------
+            // Tolerancia
+            // -------------------------------
             modelBuilder.Entity<Tolerancia>(entity =>
             {
                 entity.ToTable("Tolerancias");
@@ -41,39 +58,61 @@ namespace Batch.Data
 
                 entity.Property(e => e.Max).HasColumnType("float");
                 entity.Property(e => e.Min).HasColumnType("float");
-
-                entity.HasOne(e => e.Componente)
-                      .WithMany() // o .WithMany(c => c.Tolerancias) si tienes colección
-                      .HasForeignKey(e => e.ComponenteId)
-                      .OnDelete(DeleteBehavior.Cascade);
             });
 
-
+            // -------------------------------
+            // Lote
+            // -------------------------------
             modelBuilder.Entity<Lote>(entity =>
             {
-                entity.ToTable("Batches"); // Tabla sigue llamándose Batches
+                entity.ToTable("Batches");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Folio).HasMaxLength(30).IsRequired();
-                entity.HasIndex(e => e.Folio).IsUnique();
+
+                entity.Property(e => e.Folio)
+                      .HasMaxLength(30)
+                      .IsRequired();
+
+                entity.HasIndex(e => e.Folio); // Folio puede repetirse
+
+                entity.Property(e => e.RegistroId)
+                      .HasMaxLength(50)
+                      .IsRequired();
+
+                entity.HasIndex(e => e.RegistroId)
+                      .IsUnique(); // RegistroId único
+
+                // Relación con Componente
                 entity.HasOne(e => e.Componente)
                       .WithMany()
                       .HasForeignKey(e => e.ComponenteId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relación con Resultados
+                entity.HasMany(e => e.Resultados)
+                      .WithOne(r => r.Batch)
+                      .HasForeignKey(r => r.LoteId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // -------------------------------
+            // ResultadoPrueba
+            // -------------------------------
             modelBuilder.Entity<ResultadoPrueba>(entity =>
             {
                 entity.ToTable("ResultadosPrueba");
                 entity.HasKey(e => e.Id);
-                entity.HasOne(e => e.Batch)
-                      .WithMany(b => b.Resultados)
-                      .HasForeignKey(e => e.BatchId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(e => e.Tolerancia)
+
+                entity.Property(e => e.Valor).HasColumnType("float");
+
+                // Relación con Tolerancia
+                entity.HasOne(r => r.Tolerancia)
                       .WithMany()
-                      .HasForeignKey(e => e.ToleranciaId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .HasForeignKey(r => r.ToleranciaId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Relación con Lote ya configurada arriba
             });
+
 
 
         }

@@ -1,96 +1,68 @@
 ﻿<div class="modal fade" id="nuevoBatchModal" tabindex="-1" aria-labelledby="nuevoBatchLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="nuevoBatchLabel">Nuevo Batch</h5>
+                <h5 class="modal-title fw-bold" id="nuevoBatchLabel">Nuevo Batch</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
 
-                <!-- Componentes -->
+                <!-- Botón Retrabajo -->
+                <div class="row mb-3 d-flex justify-content-end">
+                    <div class="col-3 text-end">
+                        <button id="btnRetrabajo" class="btn btn-outline-danger w-100 p-2" onclick="seleccionarRetrabajo(this)">
+                            Retrabajo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Componentes dinámicos -->
                 <div class="row mb-3">
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-primary btn-lg w-100 p-4"
-                                data-componente="1"
-                                onclick="seleccionarComponente(this)">
-                            20RB
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-secondary btn-lg w-100 p-4"
-                                data-componente="2"
-                                onclick="seleccionarComponente(this)">
-                            22RB
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-success btn-lg w-100 p-4"
-                                data-componente="3"
-                                onclick="seleccionarComponente(this)">
-                            24RB
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-danger btn-lg w-100 p-4"
-                                data-componente="4"
-                                onclick="seleccionarComponente(this)">
-                            Z3511
-                        </button>
+                    <div class="col-12">
+                        <h5 class="fw-bold">Componentes</h5>
                     </div>
                 </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-warning btn-lg w-100 p-4"
-                                data-componente="5"
-                                onclick="seleccionarComponente(this)">
-                            FBACM70
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-info btn-lg w-100 p-4"
-                                data-componente="6"
-                                onclick="seleccionarComponente(this)">
-                            Z3881
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-dark btn-lg w-100 p-4"
-                                data-componente="7"
-                                onclick="seleccionarComponente(this)">
-                            FABAEM70
-                        </button>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-success btn-lg w-100 p-4"
-                                data-componente="8"
-                                onclick="seleccionarComponente(this)">
-                            Z143
-                        </button>
-                    </div>
+                <hr />
+                <div class="row mb-3">
+                    @foreach (var comp in ViewBag.Componentes)
+                    {
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-primary btn-lg w-100 p-4"
+                                    data-componente="@comp.Id"
+                                    onclick="seleccionarComponente(this)">
+                                @comp.Name
+                            </button>
+                        </div>
+                    }
                 </div>
 
+                <!-- Componentes dinámicos -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="fw-bold">Lineas</h5>
+                    </div>
+                </div>
                 <hr>
 
                 <!-- Líneas -->
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-3">
                         <button class="btn btn-outline-info btn-lg w-100 p-4"
-                                data-linea="A"
+                                data-linea="1"
                                 onclick="seleccionarLinea(this)">
                             Linea 1
                         </button>
                     </div>
                     <div class="col-md-3">
                         <button class="btn btn-outline-info btn-lg w-100 p-4"
-                                data-linea="B"
+                                data-linea="2"
                                 onclick="seleccionarLinea(this)">
                             Linea 2
                         </button>
                     </div>
                     <div class="col-md-3">
                         <button class="btn btn-outline-info btn-lg w-100 p-4"
-                                data-linea="C"
+                                data-linea="3"
                                 onclick="seleccionarLinea(this)">
                             Linea 3
                         </button>
@@ -114,13 +86,12 @@
 </div>
 
 <script>
-    let componenteSeleccionado = null;
+           let componenteSeleccionado = null;
     let lineaSeleccionada = null;
+    let retrabajoSeleccionado = false;
 
     function seleccionarComponente(button) {
-        // resetear estilos
         document.querySelectorAll("[data-componente]").forEach(b => b.classList.remove("active", "btn-selected"));
-        // marcar seleccionado
         button.classList.add("active", "btn-selected");
         componenteSeleccionado = button.getAttribute("data-componente");
         habilitarGuardar();
@@ -133,6 +104,12 @@
         habilitarGuardar();
     }
 
+    function seleccionarRetrabajo(button) {
+        retrabajoSeleccionado = !retrabajoSeleccionado;
+        button.classList.toggle("active");
+        button.classList.toggle("btn-selected");
+    }
+
     function habilitarGuardar() {
         if (componenteSeleccionado && lineaSeleccionada) {
             document.getElementById("btnGuardarBatch").disabled = false;
@@ -143,7 +120,11 @@
         fetch('/Batch/CrearBatch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ componenteId: componenteSeleccionado, linea: lineaSeleccionada })
+            body: JSON.stringify({
+                componenteId: componenteSeleccionado,
+                linea: lineaSeleccionada,
+                retrabajo: retrabajoSeleccionado
+            })
         })
         .then(response => {
             if (response.ok) {
@@ -154,11 +135,3 @@
         });
     }
 </script>
-
-<style>
-    /* Estilo visual para botón seleccionado */
-    .btn-selected {
-        border: 3px solid #000;
-        opacity: 0.85;
-    }
-</style>

@@ -4,6 +4,7 @@ using Batch.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Batch.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251121033143_AddLotecambio")]
+    partial class AddLotecambio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,6 +37,9 @@ namespace Batch.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ExpDays")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -92,21 +98,18 @@ namespace Batch.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("EsValido")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LoteId")
+                    b.Property<int>("BatchId")
                         .HasColumnType("int");
 
                     b.Property<int>("ToleranciaId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Valor")
-                        .HasColumnType("float");
+                    b.Property<float>("Valor")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LoteId");
+                    b.HasIndex("BatchId");
 
                     b.HasIndex("ToleranciaId");
 
@@ -156,14 +159,14 @@ namespace Batch.Migrations
                 {
                     b.HasOne("Batch.Models.Lote", "Batch")
                         .WithMany("Resultados")
-                        .HasForeignKey("LoteId")
+                        .HasForeignKey("BatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Batch.Models.Tolerancia", "Tolerancia")
                         .WithMany()
                         .HasForeignKey("ToleranciaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Batch");
@@ -174,17 +177,12 @@ namespace Batch.Migrations
             modelBuilder.Entity("Batch.Models.Tolerancia", b =>
                 {
                     b.HasOne("Batch.Models.Componente", "Componente")
-                        .WithMany("Tolerancias")
+                        .WithMany()
                         .HasForeignKey("ComponenteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Componente");
-                });
-
-            modelBuilder.Entity("Batch.Models.Componente", b =>
-                {
-                    b.Navigation("Tolerancias");
                 });
 
             modelBuilder.Entity("Batch.Models.Lote", b =>

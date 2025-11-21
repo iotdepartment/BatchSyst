@@ -1,0 +1,62 @@
+﻿@model Batch.Models.Lote
+
+@{
+    ViewData["Title"] = "Evaluar Lote";
+}
+
+<h2>Evaluación del Lote @Model.Folio (@Model.RegistroId)</h2>
+
+<form asp-action="GuardarResultados" method="post">
+    <input type="hidden" name="loteId" value="@Model.Id" />
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Prueba</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Valor</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Resultados.Count; i++)
+            {
+                var resultado = Model.Resultados.ElementAt(i);
+                <tr>
+                    <td>@resultado.Tolerancia.Prueba</td>
+                    <td>@resultado.Tolerancia.Min</td>
+                    <td>@resultado.Tolerancia.Max</td>
+                    <td>
+                        <input type="hidden" name="resultados[@i].ResultadoId" value="@resultado.Id" />
+                        <input type="number" step="0.01" name="resultados[@i].Valor" value="@resultado.Valor" class="form-control" />
+                    </td>
+                    <td>
+                        @if (resultado.EsValido)
+                        {
+                            <span class="badge bg-success">OK</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">FAIL</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Guardar Resultados</button>
+</form>
+
+<div class="alert alert-info mt-3">
+    Estado global del lote:
+    @if (Model.Resultados.All(r => r.EsValido))
+    {
+        <strong class="text-success">APROBADO</strong>
+    }
+    else
+    {
+        <strong class="text-danger">RECHAZADO</strong>
+    }
+</div>
