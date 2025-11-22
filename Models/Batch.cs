@@ -15,8 +15,10 @@ namespace Batch.Models
         public int Id { get; set; }
         public string Folio { get; set; }
         public string RegistroId { get; set; }
+
         public int ComponenteId { get; set; }
         public Componente Componente { get; set; }
+
         public DateTime FechaInicio { get; set; }
         public DateTime FechaExp { get; set; }
 
@@ -24,6 +26,9 @@ namespace Batch.Models
 
         // Nueva columna
         public DateTime? FechaCambioEstado { get; set; }
+
+        // ⚡ Nueva propiedad para guardar la tarjeta RFID
+        public string? RFID { get; set; }
 
         public ICollection<ResultadoPrueba> Resultados { get; set; }
     }

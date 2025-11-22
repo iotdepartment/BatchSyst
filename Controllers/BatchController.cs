@@ -25,15 +25,14 @@ namespace Batch.Controllers
                 .Include(l => l.Componente)
                 .Include(l => l.Resultados)
                     .ThenInclude(r => r.Tolerancia)
+                .Where(l => l.RFID == null) // ⚡ solo lotes sin RFID
                 .ToList();
 
-            // Select list de componentes para el modal
             var componentes = _context.Componentes
                 .OrderBy(c => c.Name)
                 .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
                 .ToList();
 
-            // Precios por defecto: ahora y +8 horas, por ejemplo
             var modalVm = new NuevoBatchModalViewModel
             {
                 FechaInicio = DateTime.Now,
@@ -41,7 +40,7 @@ namespace Batch.Controllers
                 Componentes = componentes
             };
 
-            ViewBag.ModalVm = modalVm; // opción simple para pasar al partial
+            ViewBag.ModalVm = modalVm;
             return View(lotes);
         }
 
@@ -59,19 +58,16 @@ namespace Batch.Controllers
                 FechaInicio = fechaLaboral,
                 FechaExp = fechaLaboral.AddDays(7),
                 Folio = folio,
-                // Aquí todavía no tienes el Id autoincremental,
-                // pero puedes usar un GUID o un placeholder temporal
-                RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP"
+                RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP",
+                RFID = null // ⚡ siempre nulo al crear
             };
 
             _context.Batches.Add(batch);
             _context.SaveChanges();
 
-            // Ahora sí, ya tienes el Id generado por SQL Server
             batch.RegistroId = $"{fechaLaboral:yyyyMMdd}-{batch.Id}";
             _context.SaveChanges();
 
-            // Generar resultados vacíos
             var tolerancias = _context.Tolerancias
                 .Where(t => t.ComponenteId == request.ComponenteId)
                 .ToList();
@@ -80,10 +76,10 @@ namespace Batch.Controllers
             {
                 _context.ResultadosPrueba.Add(new ResultadoPrueba
                 {
-                    LoteId = batch.Id,       // ✔ Usa LoteId como FK
+                    LoteId = batch.Id,
                     ToleranciaId = tol.Id,
-                    Valor = 0f,
-                    EsValido = false         // inicializa como pendiente
+                    Valor = null,
+                    EsValido = false
                 });
             }
 
@@ -92,9 +88,7 @@ namespace Batch.Controllers
             return Ok(new { Folio = batch.Folio, RegistroId = batch.RegistroId });
         }
 
-
-
-        // Vista para capturar las 10 pruebas de un lote
+        // Vista para capturar las pruebas de un lote
         public IActionResult Evaluar(int id)
         {
             var lote = _context.Batches
@@ -109,9 +103,10 @@ namespace Batch.Controllers
         }
 
         [HttpPost]
-        public IActionResult GuardarResultados(int loteId, List<ResultadoInput> resultados)
+        public IActionResult GuardarResultados([FromBody] GuardarResultadosRequest request)
         {
-            foreach (var r in resultados)
+            // Guardar valores capturados
+            foreach (var r in request.Resultados)
             {
                 var resultado = _context.ResultadosPrueba
                     .Include(x => x.Tolerancia)
@@ -120,39 +115,77 @@ namespace Batch.Controllers
                 if (resultado != null)
                 {
                     resultado.Valor = r.Valor;
-                    resultado.EsValido = resultado.Valor >= resultado.Tolerancia.Min &&
+                    resultado.EsValido = resultado.Valor.HasValue &&
+                                         resultado.Valor >= resultado.Tolerancia.Min &&
                                          resultado.Valor <= resultado.Tolerancia.Max;
                 }
             }
 
             _context.SaveChanges();
 
-            var lote = _context.Batches
-                .Include(l => l.Resultados)
-                .FirstOrDefault(l => l.Id == loteId);
-
-            if (lote.Resultados.All(r => r.Valor.HasValue)) // todas llenadas
+            // Si se presionó "Enviar", completar vacíos con 0 y cambiar estado
+            if (request.Enviar)
             {
-                lote.Estado = lote.Resultados.All(r => r.EsValido)
-                    ? EstadoBatch.LlenadoAprobado
-                    : EstadoBatch.LlenadoRechazado;
+                var lote = _context.Batches
+                    .Include(l => l.Resultados)
+                    .FirstOrDefault(l => l.Id == request.LoteId);
 
-                lote.FechaCambioEstado = DateTime.Now; // 🔎 aquí sí se guarda
-                _context.SaveChanges();
+                if (lote != null)
+                {
+                    // ⚡ Forzar que los vacíos sean 0
+                    foreach (var res in lote.Resultados)
+                    {
+                        if (!res.Valor.HasValue)
+                        {
+                            res.Valor = 0;
+                            res.EsValido = false; // 0 fuera de rango normalmente
+                        }
+                    }
+
+                    // Evaluar estado
+                    lote.Estado = lote.Resultados.All(r => r.EsValido)
+                        ? EstadoBatch.LlenadoAprobado
+                        : EstadoBatch.LlenadoRechazado;
+
+                    lote.FechaCambioEstado = DateTime.Now;
+                    _context.SaveChanges();
+                }
             }
 
-            return RedirectToAction("Evaluar", new { id = loteId });
+            return Ok();
         }
 
+        [HttpPost]
+        public IActionResult GuardarRFID([FromBody] GuardarRFIDRequest request)
+        {
+            var lote = _context.Batches.FirstOrDefault(l => l.Id == request.LoteId);
 
+            if (lote == null) return NotFound();
+
+            if (lote.Estado == EstadoBatch.LlenadoAprobado)
+            {
+                lote.RFID = request.RFID;
+                _context.SaveChanges();
+                return Ok();
+            }
+
+            return BadRequest("El lote no está aprobado, no se puede asignar RFID.");
+        }
 
     }
+
+    public class GuardarRFIDRequest
+    {
+        public int LoteId { get; set; }
+        public string RFID { get; set; }
+    }
+
+
     public class ResultadoInput
     {
         public int ResultadoId { get; set; }
-        public float Valor { get; set; }
+        public float? Valor { get; set; } // ⚡ ahora nullable
     }
-
 
     public class BatchRequest
     {
@@ -161,4 +194,10 @@ namespace Batch.Controllers
         public bool Retrabajo { get; set; }
     }
 
+    public class GuardarResultadosRequest
+    {
+        public int LoteId { get; set; }
+        public bool Enviar { get; set; }
+        public List<ResultadoInput> Resultados { get; set; }
+    }
 }

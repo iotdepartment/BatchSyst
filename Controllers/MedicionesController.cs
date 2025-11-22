@@ -17,45 +17,6 @@ namespace Batch.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public IActionResult GuardarResultados(int loteId, List<ResultadoInput> resultados)
-        {
-            foreach (var r in resultados)
-            {
-                var resultado = _context.ResultadosPrueba
-                    .Include(x => x.Tolerancia)
-                    .FirstOrDefault(x => x.Id == r.ResultadoId);
-
-                if (resultado != null)
-                {
-                    resultado.Valor = r.Valor;
-                    resultado.EsValido = resultado.Valor >= resultado.Tolerancia.Min &&
-                                         resultado.Valor <= resultado.Tolerancia.Max;
-                }
-            }
-
-            _context.SaveChanges();
-
-            var lote = _context.Batches
-                .Include(l => l.Resultados)
-                .FirstOrDefault(l => l.Id == loteId);
-
-            if (lote != null)
-            {
-                if (lote.Resultados.All(r => r.Valor.HasValue))
-                {
-                    lote.Estado = lote.Resultados.All(r => r.EsValido)
-                        ? EstadoBatch.LlenadoAprobado
-                        : EstadoBatch.LlenadoRechazado;
-
-                    lote.FechaCambioEstado = DateTime.Now; // 🔎 fecha de cambio
-                    _context.SaveChanges();
-                }
-            }
-
-            return RedirectToAction("Evaluar", new { id = loteId });
-        }
-
 
         [HttpGet("ResumenLote/{loteId}")]
         public IActionResult ResumenLote(int loteId)
@@ -96,6 +57,7 @@ namespace Batch.Controllers
 
 
     }
+
 
 
     public class EvaluarPruebaRequest
