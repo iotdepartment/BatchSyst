@@ -11,7 +11,9 @@ namespace Batch.Models
         public int ToleranciaId { get; set; }
         public Tolerancia Tolerancia { get; set; }
 
-        public float Valor { get; set; }
+        // Cambiar de float/double a nullable
+        public float? Valor { get; set; }
+
         public bool EsValido { get; set; }
     }
 }

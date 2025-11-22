@@ -1,4 +1,5 @@
 ﻿using Batch.Data;
+using Batch.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,35 +17,43 @@ namespace Batch.Controllers
             _context = context;
         }
 
-        [HttpPut("EvaluarPrueba")]
-        public IActionResult EvaluarPrueba([FromBody] EvaluarPruebaRequest request)
+        [HttpPost]
+        public IActionResult GuardarResultados(int loteId, List<ResultadoInput> resultados)
         {
-            var resultado = _context.ResultadosPrueba
-                .Include(r => r.Tolerancia)
-                .FirstOrDefault(r => r.Id == request.ResultadoId);
+            foreach (var r in resultados)
+            {
+                var resultado = _context.ResultadosPrueba
+                    .Include(x => x.Tolerancia)
+                    .FirstOrDefault(x => x.Id == r.ResultadoId);
 
-            if (resultado == null)
-                return NotFound("Resultado no encontrado");
-
-            // Guardar valor medido
-            resultado.Valor = request.Valor;
-
-            // Validar contra Min y Max
-            resultado.EsValido = resultado.Valor >= resultado.Tolerancia.Min &&
-                                 resultado.Valor <= resultado.Tolerancia.Max;
+                if (resultado != null)
+                {
+                    resultado.Valor = r.Valor;
+                    resultado.EsValido = resultado.Valor >= resultado.Tolerancia.Min &&
+                                         resultado.Valor <= resultado.Tolerancia.Max;
+                }
+            }
 
             _context.SaveChanges();
 
-            return Ok(new
+            var lote = _context.Batches
+                .Include(l => l.Resultados)
+                .FirstOrDefault(l => l.Id == loteId);
+
+            if (lote != null)
             {
-                ResultadoId = resultado.Id,
-                LoteId = resultado.LoteId,
-                Prueba = resultado.Tolerancia.Prueba,   // nombre de la prueba
-                Min = resultado.Tolerancia.Min,
-                Max = resultado.Tolerancia.Max,
-                Valor = resultado.Valor,
-                Estado = resultado.EsValido ? "OK" : "FAIL"
-            });
+                if (lote.Resultados.All(r => r.Valor.HasValue))
+                {
+                    lote.Estado = lote.Resultados.All(r => r.EsValido)
+                        ? EstadoBatch.LlenadoAprobado
+                        : EstadoBatch.LlenadoRechazado;
+
+                    lote.FechaCambioEstado = DateTime.Now; // 🔎 fecha de cambio
+                    _context.SaveChanges();
+                }
+            }
+
+            return RedirectToAction("Evaluar", new { id = loteId });
         }
 
 

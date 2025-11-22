@@ -2,7 +2,9 @@
 using Batch.Helper;
 using Batch.Helpers;
 using Batch.Models;
+using Batch.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Batch.Controllers
@@ -19,20 +21,28 @@ namespace Batch.Controllers
         // GET: Batches
         public IActionResult Index()
         {
-            var lista = _context.Batches
-                                .Include(b => b.Componente)
-                                .OrderByDescending(b => b.FechaInicio)
-                                .ToList();
+            var lotes = _context.Batches
+                .Include(l => l.Componente)
+                .Include(l => l.Resultados)
+                    .ThenInclude(r => r.Tolerancia)
+                .ToList();
 
-            // Traer solo componentes con Id del 1 al 8
+            // Select list de componentes para el modal
             var componentes = _context.Componentes
-                                      .Where(c => c.Id >= 1 && c.Id <= 8)
-                                      .OrderBy(c => c.Id)
-                                      .ToList();
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+                .ToList();
 
-            ViewBag.Componentes = componentes;
+            // Precios por defecto: ahora y +8 horas, por ejemplo
+            var modalVm = new NuevoBatchModalViewModel
+            {
+                FechaInicio = DateTime.Now,
+                FechaExp = DateTime.Now.AddHours(8),
+                Componentes = componentes
+            };
 
-            return View(lista);
+            ViewBag.ModalVm = modalVm; // opción simple para pasar al partial
+            return View(lotes);
         }
 
         [HttpPost]
@@ -116,6 +126,20 @@ namespace Batch.Controllers
             }
 
             _context.SaveChanges();
+
+            var lote = _context.Batches
+                .Include(l => l.Resultados)
+                .FirstOrDefault(l => l.Id == loteId);
+
+            if (lote.Resultados.All(r => r.Valor.HasValue)) // todas llenadas
+            {
+                lote.Estado = lote.Resultados.All(r => r.EsValido)
+                    ? EstadoBatch.LlenadoAprobado
+                    : EstadoBatch.LlenadoRechazado;
+
+                lote.FechaCambioEstado = DateTime.Now; // 🔎 aquí sí se guarda
+                _context.SaveChanges();
+            }
 
             return RedirectToAction("Evaluar", new { id = loteId });
         }

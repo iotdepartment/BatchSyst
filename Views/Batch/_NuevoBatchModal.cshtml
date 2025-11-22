@@ -1,4 +1,6 @@
-﻿<div class="modal fade" id="nuevoBatchModal" tabindex="-1" aria-labelledby="nuevoBatchLabel" aria-hidden="true">
+﻿@model Batch.ViewModels.NuevoBatchModalViewModel
+
+<div class="modal fade" id="nuevoBatchModal" tabindex="-1" aria-labelledby="nuevoBatchLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -24,27 +26,25 @@
                 </div>
                 <hr />
                 <div class="row mb-3">
-                    @foreach (var comp in ViewBag.Componentes)
+                    @foreach (var comp in Model.Componentes ?? Enumerable.Empty<SelectListItem>())
                     {
                         <div class="col-md-3 mb-3">
                             <button class="btn btn-outline-primary btn-lg w-100 p-4"
-                                    data-componente="@comp.Id"
+                                    data-componente="@comp.Value"
                                     onclick="seleccionarComponente(this)">
-                                @comp.Name
+                                @comp.Text
                             </button>
                         </div>
                     }
                 </div>
 
-                <!-- Componentes dinámicos -->
+                <!-- Líneas -->
                 <div class="row mb-3">
                     <div class="col-12">
                         <h5 class="fw-bold">Lineas</h5>
                     </div>
                 </div>
                 <hr>
-
-                <!-- Líneas -->
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <button class="btn btn-outline-info btn-lg w-100 p-4"

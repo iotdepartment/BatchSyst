@@ -1,14 +1,13 @@
 ﻿@model IEnumerable<Batch.Models.Lote>
-
+@using Batch.ViewModels
 @{
     ViewData["Title"] = "Batches";
 }
 
 <div class="container mt-5">
-
     <!-- Botón para abrir modal -->
     <div class="row mb-4">
-        <div class="col d-flex justify-content-start text-center">
+        <div class="col d-flex justify-content-start">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoBatchModal">
                 Nuevo Batch
             </button>
@@ -26,7 +25,9 @@
                 <th>Fecha Inicio</th>
                 <th>Fecha Exp</th>
                 <th>Turno</th>
-                <th>Acciones</th> <!-- nueva columna -->
+                <th>Estado</th>
+                <th>Fecha Finalizado</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -37,18 +38,125 @@
                     <tr>
                         <td class="text-center fw-bold">@item.RegistroId</td>
                         <td class="text-center">@item.Folio</td>
-                        <td>@item.Componente?.Name</td>
+                        <td>@(item.Componente?.Name ?? "Sin componente")</td>
                         <td>@item.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
                         <td>@item.FechaExp.ToString("dd/MM/yyyy HH:mm")</td>
                         <td class="text-center">
                             @Batch.Helpers.DiaLaboralHelper.ObtenerTurno(item.FechaInicio)
                         </td>
                         <td class="text-center">
-                            <!-- Botón para acceder a la evaluación -->
-                            <a asp-controller="Batch" asp-action="Evaluar" asp-route-id="@item.Id"
-                               class="btn btn-sm btn-success">
-                                Evaluar
-                            </a>
+                            @switch (item.Estado)
+                            {
+                                case EstadoBatch.PendienteDeLlenado:
+                                    @:<span class="badge bg-secondary">Pendiente</span>
+                                    break;
+                                case EstadoBatch.LlenadoAprobado:
+                                    @:<span class="badge bg-success">Aprobado</span>
+                                    break;
+                                case EstadoBatch.LlenadoRechazado:
+                                    @:<span class="badge bg-danger">Rechazado</span>
+                                    break;
+                                case EstadoBatch.Consumido:
+                                    @:<span class="badge bg-dark">Consumido</span>
+                                    break;
+                            }
+                </td>
+                <td class="text-center">
+                    @(item.FechaCambioEstado.HasValue
+                                        ? item.FechaCambioEstado.Value.ToString("dd/MM/yyyy HH:mm")
+                                        : "Pendiente")
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-info" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#batch-@item.Id">
+                        Evaluar
+                    </button>
+                </td>
+            </tr>
+
+                    <tr class="collapse" id="batch-@item.Id">
+                        <td colspan="9">
+                            <div class="card card-body">
+                                <h5 class="fw-bold mb-3">Pruebas del lote @item.Folio</h5>
+
+                                <div class="row">
+                                    <!-- Pruebas a la izquierda -->
+                                    <div class="col-md-9">
+                                        <div class="row g-3">
+                                    @foreach (var resultado in item.Resultados)
+                                            {
+                                                <div class="col-md-4">
+                                                    <!-- Label con nombre y estado -->
+                                                    <label class="d-flex justify-content-between align-items-center rounded-pill px-3 py-2 bg-light fw-bold">
+                                                        @resultado.Tolerancia.Prueba
+                                                        <span id="estado-@resultado.Id">
+                                                            @if (resultado.Valor.HasValue)
+                                                            {
+                                                @Html.Raw(resultado.EsValido
+                                                                                                ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
+                                                                                                : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>")
+                                                                                                }
+                                                        </span>
+                                                    </label>
+
+                                                    <!-- Input redondeado (sin inicializar en 0) -->
+                                                    <input type="text"
+                                                           id="valor-@resultado.Id"
+                                                           value="@(resultado.Valor.HasValue? resultado.Valor.ToString() : "")"
+                                                           class="form-control form-control-sm text-center rounded-pill mt-2"
+                                                           readonly
+                                                           onclick="abrirPad(@resultado.Id, @resultado.Tolerancia.Min, @resultado.Tolerancia.Max)" />
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Botón Guardar -->
+                                        @if (item.Estado == EstadoBatch.PendienteDeLlenado)
+                                        {
+                                            <div class="text-center mt-4">
+                                                <button class="btn btn-success px-5" onclick="guardarResultados(@item.Id)">
+                                                    Guardar Resultados
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- Pad numérico fijo a la derecha -->
+                                    <div class="col-md-3">
+                                        <div id="numericPad-@item.Id" class="card shadow p-3">
+                                            <div class="row g-2">
+                                                @for (int i = 1; i <= 9; i++)
+                                                {
+                                                    <div class="col-4">
+                                                        <button type="button" class="btn btn-outline-primary w-100"
+                                                                onclick="padInput(@item.Id,'@i')">
+                                                            @i
+                                                        </button>
+                                                    </div>
+                                                }
+                                                <div class="col-4">
+                                                    <button type="button" class="btn btn-outline-secondary w-100"
+                                                            onclick="padDelete(@item.Id)">
+                                                        ⌫
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button type="button" class="btn btn-outline-primary w-100"
+                                                            onclick="padInput(@item.Id,'0')">
+                                                        0
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button type="button" class="btn btn-success w-100"
+                                                            onclick="padConfirm(@item.Id)">
+                                                        ✔
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -56,28 +164,97 @@
             else
             {
                 <tr>
-                    <td colspan="7" class="text-center text-muted">No hay batches registrados</td>
+                    <td colspan="9" class="text-center text-muted">No hay batches registrados</td>
                 </tr>
             }
         </tbody>
     </table>
-
 </div>
 
 
 
-    @* <!-- Render del partial -->
-    @Html.Partial("_PartialAccordion") *@
-
-
-
-
-<!-- Aquí incluyes el modal que ya definimos -->
-@await Html.PartialAsync("_NuevoBatchModal")
-
+<!-- Render del partial del modal -->
+@await Html.PartialAsync("_NuevoBatchModal", (NuevoBatchModalViewModel)ViewBag.ModalVm)
 
 @section Scripts {
     <script>
-      
+        let currentInput = null;
+        let currentMin = 0;
+        let currentMax = 0;
+
+        function abrirPad(resultadoId, min, max) {
+            currentInput = document.getElementById(`valor-${resultadoId}`);
+            currentMin = min;
+            currentMax = max;
+        }
+
+        function padInput(loteId, num) {
+            if (currentInput) {
+                currentInput.value += num;
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
+
+        function padDelete(loteId) {
+            if (currentInput) {
+                currentInput.value = currentInput.value.slice(0, -1);
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
+
+        function padConfirm(loteId) {
+            currentInput = null;
+        }
+
+        function validar(input, min, max) {
+            const valor = parseFloat(input.value);
+            const estadoCell = document.getElementById(`estado-${input.id.replace("valor-", "")}`);
+            if (!isNaN(valor)) {
+                if (valor >= min && valor <= max) {
+                    estadoCell.innerHTML = "<span class='badge bg-success rounded-pill px-3'>OK</span>";
+                } else {
+                    estadoCell.innerHTML = "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>";
+                }
+            } else {
+                estadoCell.innerHTML = "";
+            }
+        }
+
+        function guardarResultados(loteId) {
+            const inputs = document.querySelectorAll(`#batch-${loteId} input`);
+            const resultados = [];
+            inputs.forEach(i => {
+                resultados.push({
+                    ResultadoId: i.id.replace("valor-", ""),
+                    Valor: parseFloat(i.value)
+                });
+            });
+
+            fetch('/Mediciones/GuardarResultados?loteId=' + loteId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resultados)
+            })
+            .then(r => {
+                if (r.ok) location.reload();
+                else alert("Error al guardar resultados");
+            });
+        }
+    </script>
+
+
+
+    <script>
+        function evaluarLocal(resultadoId, min, max) {
+            const valor = parseFloat(document.getElementById(`valor-${resultadoId}`)?.value);
+            if (isNaN(valor)) return;
+
+            const estadoCell = document.getElementById(`estado-${resultadoId}`);
+            if (valor >= min && valor <= max) {
+                estadoCell.innerHTML = "<span class='badge bg-success'>OK</span>";
+            } else {
+                estadoCell.innerHTML = "<span class='badge bg-danger'>FAIL</span>";
+            }
+        }
     </script>
 }

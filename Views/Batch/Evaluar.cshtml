@@ -1,12 +1,8 @@
 ﻿@model Batch.Models.Lote
 
-@{
-    ViewData["Title"] = "Evaluar Lote";
-}
+<h2>Evaluación del Lote @Model.Folio</h2>
 
-<h2>Evaluación del Lote @Model.Folio (@Model.RegistroId)</h2>
-
-<form asp-action="GuardarResultados" method="post">
+<form id="formResultados" asp-action="GuardarResultados" method="post">
     <input type="hidden" name="loteId" value="@Model.Id" />
 
     <table class="table table-bordered">
@@ -29,34 +25,99 @@
                     <td>@resultado.Tolerancia.Max</td>
                     <td>
                         <input type="hidden" name="resultados[@i].ResultadoId" value="@resultado.Id" />
-                        <input type="number" step="0.01" name="resultados[@i].Valor" value="@resultado.Valor" class="form-control" />
+                        <input type="number" step="0.01"
+                               name="resultados[@i].Valor"
+                               id="valor-@resultado.Id"
+                               value="@(resultado.Valor.HasValue? resultado.Valor.ToString() : "")"
+                               class="form-control"
+                               @(Model.Estado != EstadoBatch.PendienteDeLlenado ? "disabled" : "")
+                               onblur="evaluarLocal(@resultado.Id, @resultado.Tolerancia.Min, @resultado.Tolerancia.Max)" />
                     </td>
-                    <td>
-                        @if (resultado.EsValido)
+                    <td id="estado-@resultado.Id">
+                        @if (resultado.Valor.HasValue)
                         {
-                            <span class="badge bg-success">OK</span>
+                    @Html.Raw(resultado.EsValido
+                                        ? "<span class='badge bg-success'>OK</span>"
+                                        : "<span class='badge bg-danger'>FAIL</span>")
+                                        }
+                </td>
+            </tr>
                         }
-                        else
-                        {
-                            <span class="badge bg-danger">FAIL</span>
-                        }
-                    </td>
-                </tr>
-            }
         </tbody>
     </table>
 
-    <button type="submit" class="btn btn-primary">Guardar Resultados</button>
-</form>
-
-<div class="alert alert-info mt-3">
-    Estado global del lote:
-    @if (Model.Resultados.All(r => r.EsValido))
+    @if (Model.Estado == EstadoBatch.PendienteDeLlenado)
     {
-        <strong class="text-success">APROBADO</strong>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">
+            Guardar Resultados
+        </button>
     }
     else
     {
-        <strong class="text-danger">RECHAZADO</strong>
+        <div class="alert alert-info mt-3">
+            Estado del lote: <strong>@Model.Estado</strong><br />
+            Fecha cambio de estado: <strong>@Model.FechaCambioEstado?.ToString("dd/MM/yyyy HH:mm")</strong>
+        </div>
     }
+</form>
+
+<!-- Modal de verificación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Guardado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resumenModal">
+                <!-- Aquí se llenará con JS el resumen -->
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="formResultados" class="btn btn-success" id="btnConfirmar" disabled>Confirmar</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function evaluarLocal(resultadoId, min, max) {
+            const valor = parseFloat(document.getElementById(`valor-${resultadoId}`).value);
+            if (isNaN(valor)) return;
+
+            const estadoCell = document.getElementById(`estado-${resultadoId}`);
+            if (valor >= min && valor <= max) {
+                estadoCell.innerHTML = "<span class='badge bg-success'>OK</span>";
+            } else {
+                estadoCell.innerHTML = "<span class='badge bg-danger'>FAIL</span>";
+            }
+        }
+
+        // Antes de abrir el modal, genera resumen
+        document.getElementById("confirmModal").addEventListener("show.bs.modal", () => {
+            const inputs = document.querySelectorAll("input[type=number]");
+            let llenadas = 0, ok = 0, fail = 0;
+
+            inputs.forEach(i => {
+                if (i.value) llenadas++;
+            });
+
+            document.querySelectorAll("td[id^=estado-]").forEach(td => {
+                if (td.innerText.includes("OK")) ok++;
+                if (td.innerText.includes("FAIL")) fail++;
+            });
+
+            const resumen = `
+                <p>Total pruebas: ${inputs.length}</p>
+                <p>Llenadas: ${llenadas}</p>
+                <p>OK: ${ok}</p>
+                <p>FAIL: ${fail}</p>
+            `;
+
+            document.getElementById("resumenModal").innerHTML = resumen;
+
+            // habilitar confirmación solo si todas llenadas
+            document.getElementById("btnConfirmar").disabled = (llenadas !== inputs.length);
+        });
+    </script>
+}
