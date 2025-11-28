@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Batch.Models
 {
@@ -24,12 +26,20 @@ namespace Batch.Models
 
         public EstadoBatch Estado { get; set; } = EstadoBatch.PendienteDeLlenado;
 
-        // Nueva columna
         public DateTime? FechaCambioEstado { get; set; }
 
-        // ⚡ Nueva propiedad para guardar la tarjeta RFID
         public string? RFID { get; set; }
 
+        // ⚡ Nueva propiedad: se asigna automáticamente al crear
+        [DataType(DataType.DateTime)]
+        public DateTime FechaCreacion { get; set; }
+
         public ICollection<ResultadoPrueba> Resultados { get; set; }
+
+        // ⚡ Constructor que asigna automáticamente la fecha de creación
+        public Lote()
+        {
+            FechaCreacion = DateTime.Now;
+        }
     }
 }

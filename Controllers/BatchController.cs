@@ -19,18 +19,58 @@ namespace Batch.Controllers
         }
 
         // GET: Batches
-        public IActionResult Index()
+        [HttpGet]
+        public IActionResult Crear()
         {
             var lotes = _context.Batches
                 .Include(l => l.Componente)
                 .Include(l => l.Resultados)
                     .ThenInclude(r => r.Tolerancia)
-                .Where(l => l.RFID == null) // ⚡ solo lotes sin RFID
+                .Where(l => l.RFID == null
+                         && (l.Estado == EstadoBatch.PendienteDeLlenado
+                             || l.Estado == EstadoBatch.LlenadoAprobado)) // ⚡ solo estado 0 y 1
                 .ToList();
 
             var componentes = _context.Componentes
                 .OrderBy(c => c.Name)
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                })
+                .ToList();
+
+            var modalVm = new NuevoBatchModalViewModel
+            {
+                FechaInicio = DateTime.Now,
+                FechaExp = DateTime.Now.AddHours(8),
+                Componentes = componentes
+            };
+
+            ViewBag.ModalVm = modalVm;
+            return View(lotes);
+        }
+
+        // GET: Batches
+        [HttpGet]
+        public IActionResult CrearVdos()
+        {
+            var lotes = _context.Batches
+                .Include(l => l.Componente)
+                .Include(l => l.Resultados)
+                    .ThenInclude(r => r.Tolerancia)
+                .Where(l => l.RFID == null
+                         && (l.Estado == EstadoBatch.PendienteDeLlenado
+                             || l.Estado == EstadoBatch.LlenadoAprobado)) // ⚡ solo estado 0 y 1
+                .ToList();
+
+            var componentes = _context.Componentes
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                })
                 .ToList();
 
             var modalVm = new NuevoBatchModalViewModel
@@ -170,6 +210,18 @@ namespace Batch.Controllers
             }
 
             return BadRequest("El lote no está aprobado, no se puede asignar RFID.");
+        }
+
+        public IActionResult Lista()
+        {
+            var lotes = _context.Batches
+                .Include(l => l.Componente)
+                .Include(l => l.Resultados)
+                    .ThenInclude(r => r.Tolerancia)
+                .OrderByDescending(l => l.FechaCreacion)
+                .ToList();
+
+            return View(lotes);
         }
 
     }

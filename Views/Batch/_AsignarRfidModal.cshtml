@@ -1,0 +1,20 @@
+﻿@model Batch.Models.Lote
+
+<div class="modal fade" id="rfidModal-@Model.Id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Asignar RFID</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label for="rfidInput-@Model.Id" class="form-label">Ingrese RFID</label>
+                <input type="text" class="form-control" id="rfidInput-@Model.Id" placeholder="RFID..." />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarRFID(@Model.Id)">Guardar RFID</button>
+            </div>
+        </div>
+    </div>
+</div>

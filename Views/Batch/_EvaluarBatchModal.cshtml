@@ -1,0 +1,102 @@
+﻿@model Batch.Models.Lote
+
+<div class="modal fade" id="evaluarModal-@Model.Id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Pruebas del lote @Model.Folio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="row g-3">
+                            @foreach (var resultado in Model.Resultados)
+                            {
+                                <div class="col-md-4">
+                                    <label class="d-flex justify-content-between align-items-center rounded-pill px-3 py-2 bg-light fw-bold">
+                                        @resultado.Tolerancia.Prueba
+                                        <span id="estado-@resultado.Id">
+                                            @if (resultado.Valor.HasValue)
+                                            {
+                                        @Html.Raw(resultado.EsValido
+                                                                                ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
+                                                                                : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>")
+                                                                                }
+                                        </span>
+                                    </label>
+
+                                    <input type="text"
+                                           id="valor-@resultado.Id"
+                                           value="@(resultado.Valor.HasValue? resultado.Valor.ToString() : "")"
+                                           class="form-control form-control-sm text-center rounded-pill mt-2"
+                                           readonly
+                                           @(Model.Estado != EstadoBatch.PendienteDeLlenado ? "disabled" : "")
+                                           onclick="abrirPad(@resultado.Id, @resultado.Tolerancia.Min, @resultado.Tolerancia.Max)" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Pad numérico -->
+                    <div class="col-md-3 h-100">
+                        <div id="numericPad-@Model.Id" class="card p-3 h-100">
+                            <div class="row g-3 h-100">
+                                @for (int i = 1; i <= 9; i++)
+                                {
+                                    <div class="col-4 d-flex">
+                                        <button type="button"
+                                                class="btn btn-secondary btn-lg flex-fill"
+                                                style="height:80px;"
+                                                onclick="padInput(@Model.Id,'@i')">
+                                            @i
+                                        </button>
+                                    </div>
+                                }
+                                <div class="col-4 d-flex">
+                                    <button type="button"
+                                            class="btn btn-danger btn-lg flex-fill"
+                                            style="height:80px;"
+                                            onclick="padDelete(@Model.Id)">
+                                        ⌫
+                                    </button>
+                                </div>
+                                <div class="col-4 d-flex">
+                                    <button type="button"
+                                            class="btn btn-secondary btn-lg flex-fill"
+                                            style="height:80px;"
+                                            onclick="padInput(@Model.Id,'0')">
+                                        0
+                                    </button>
+                                </div>
+                                <div class="col-4 d-flex">
+                                    <button type="button"
+                                            class="btn btn-secondary btn-lg flex-fill"
+                                            style="height:80px;"
+                                            onclick="padInput(@Model.Id,'.')">
+                                        .
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                @if (Model.Estado == EstadoBatch.PendienteDeLlenado)
+                {
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-warning px-5"
+                                onclick="guardarResultados(@Model.Id, false)">
+                            Guardar Datos
+                        </button>
+                        <button type="button" class="btn btn-success px-5"
+                                onclick="confirmarEnvio(@Model.Id)">
+                            Enviar Datos
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

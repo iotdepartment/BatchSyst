@@ -87,6 +87,9 @@ namespace Batch.Data
                       .HasForeignKey(e => e.ComponenteId)
                       .OnDelete(DeleteBehavior.Cascade);
 
+               
+
+
                 // Relación con Resultados
                 entity.HasMany(e => e.Resultados)
                       .WithOne(r => r.Batch)
