@@ -26,16 +26,26 @@
                             case EstadoBatch.PendienteDeLlenado:
                                 @:<span class="badge bg-secondary">Pendiente</span>
                                 break;
+
                             case EstadoBatch.LlenadoAprobado:
                                 @:<span class="badge bg-success">Aprobado</span>
                                 break;
+
                             case EstadoBatch.LlenadoRechazado:
                                 @:<span class="badge bg-danger">Rechazado</span>
                                 break;
+
+                            case EstadoBatch.RFIDAsignado:
+                                @:<span class="badge bg-info text-white">RFID asignado</span>
+                                break;
+
                             case EstadoBatch.Consumido:
                                 @:<span class="badge bg-primary">Consumido</span>
                                 break;
 
+                            default:
+                                @:<span class="badge bg-light text-dark">Estado desconocido</span>
+                                break;
                         }
                     </td>
                     <td class="text-center">@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>

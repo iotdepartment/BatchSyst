@@ -9,7 +9,8 @@ namespace Batch.Models
         PendienteDeLlenado = 0,
         LlenadoAprobado = 1,
         LlenadoRechazado = 2,
-        Consumido = 3
+        RFIDAsignado = 3,
+        Consumido = 4
     }
 
     public class Lote

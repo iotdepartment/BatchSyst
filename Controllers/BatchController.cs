@@ -200,13 +200,17 @@ namespace Batch.Controllers
         {
             var lote = _context.Batches.FirstOrDefault(l => l.Id == request.LoteId);
 
-            if (lote == null) return NotFound();
+            if (lote == null)
+                return NotFound();
 
+            // Solo permitir asignar RFID si el lote está aprobado para llenado
             if (lote.Estado == EstadoBatch.LlenadoAprobado)
             {
                 lote.RFID = request.RFID;
+                lote.Estado = EstadoBatch.RFIDAsignado; // ⚡ cambia el estado automáticamente
                 _context.SaveChanges();
-                return Ok();
+
+                return Ok(new { success = true, nuevoEstado = lote.Estado, rfid = lote.RFID });
             }
 
             return BadRequest("El lote no está aprobado, no se puede asignar RFID.");

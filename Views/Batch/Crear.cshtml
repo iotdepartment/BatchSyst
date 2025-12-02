@@ -38,7 +38,6 @@
                     .Select(r => r.Tolerancia?.Prueba)
                     .ToList();
 
-                    <!-- Fila principal -->
                     <tr>
                         <td class="text-center">@item.Folio</td>
                         <td class="text-center">@(item.Componente?.Name ?? "Sin componente")</td>
@@ -48,7 +47,7 @@
                             @if (item.Estado == EstadoBatch.PendienteDeLlenado)
                             {
                                 <button class="btn btn-sm btn-info rounded-pill" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#batch-@item.Id">
+                                        data-bs-toggle="modal" data-bs-target="#evaluarModal-@item.Id">
                                     Evaluar
                                 </button>
                             }
@@ -69,124 +68,24 @@
                         <td class="text-center">
                             @if (pruebasPendientes != null && pruebasPendientes.Any())
                             {
+                                <!-- Caso 1: hay pruebas sin llenar -->
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
                                     @foreach (var prueba in pruebasPendientes)
                                     {
-                                        <span class="badge bg-warning text-dark">@prueba</span>
+                                        <span class="badge bg-warning text-white">@prueba</span>
                                     }
                                 </div>
                             }
+                            else if (item.Estado != EstadoBatch.LlenadoAprobado)
+                            {
+                                <!-- Caso 2: todas llenas pero aún no enviado/aprobado -->
+                                <span class="badge bg-info text-white">Pendiente de envío</span>
+                            }
                             else
                             {
+                                <!-- Caso 3: aprobado -->
                                 <span class="badge bg-success">Aprobado</span>
                             }
-                        </td>
-                    </tr>
-
-                    <!-- ⚡ Fila colapsable debajo -->
-                    <tr class="collapse-row">
-                        <td colspan="6" class="p-0">
-                            <div class="collapse" id="batch-@item.Id">
-                                <div class="p-4 bg-light">
-                                    <h5 class="fw-bold mb-3">Pruebas del lote @item.Folio</h5>
-
-                                    <div class="row">
-                                        <!-- Pruebas a la izquierda -->
-                                        <div class="col-md-9">
-                                            <div class="row g-3">
-                                                @foreach (var resultado in item.Resultados)
-                                                {
-                                                    <div class="col-md-4">
-                                                        <!-- Label con nombre y estado -->
-                                                        <label class="d-flex justify-content-between align-items-center rounded-pill px-3 py-2 bg-light fw-bold">
-                                                            @resultado.Tolerancia.Prueba
-                                                            <span id="estado-@resultado.Id">
-                                                                @if (resultado.Valor.HasValue)
-                                                                {
-                                                    @Html.Raw(resultado.EsValido
-                                                                                                        ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
-                                                                                                        : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>")
-                                                                                                        }
-                                                            </span>
-                                                        </label>
-
-                                                        <!-- Input redondeado -->
-                                                        <input type="text"
-                                                               id="valor-@resultado.Id"
-                                                               value="@(resultado.Valor.HasValue? resultado.Valor.ToString() : "")"
-                                                               class="form-control form-control-sm text-center rounded-pill mt-2"
-                                                               readonly
-                                                               @(item.Estado != EstadoBatch.PendienteDeLlenado ? "disabled" : "")
-                                                               onclick="abrirPad(@resultado.Id, @resultado.Tolerancia.Min, @resultado.Tolerancia.Max)" />
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-
-                                        <!-- Pad numérico fijo a la derecha -->
-                                        <div class="col-md-3 h-100">
-                                            <div id="numericPad-@item.Id" class="card p-3 h-100">
-                                                <div class="row g-3 h-100">
-                                                    @for (int i = 1; i <= 9; i++)
-                                                    {
-                                                        <div class="col-4 d-flex">
-                                                            <button type="button"
-                                                                    class="btn btn-secondary btn-lg flex-fill"
-                                                                    style="height:80px;"
-                                                                    onclick="padInput(@item.Id,'@i')">
-                                                                @i
-                                                            </button>
-                                                        </div>
-                                                    }
-                                                    <div class="col-4 d-flex">
-                                                        <button type="button"
-                                                                class="btn btn-danger btn-lg flex-fill"
-                                                                style="height:80px;"
-                                                                onclick="padDelete(@item.Id)">
-                                                            ⌫
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-4 d-flex">
-                                                        <button type="button"
-                                                                class="btn btn-secondary btn-lg flex-fill"
-                                                                style="height:80px;"
-                                                                onclick="padInput(@item.Id,'0')">
-                                                            0
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-4 d-flex">
-                                                        <button type="button"
-                                                                class="btn btn-secondary btn-lg flex-fill"
-                                                                style="height:80px;"
-                                                                onclick="padInput(@item.Id,'.')">
-                                                            .
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Botón Guardar -->
-                                        @if (item.Estado == EstadoBatch.PendienteDeLlenado)
-                                        {
-                                            <div class="text-center mt-4">
-                                                <!-- Guardar solo persiste -->
-                                                <button class="btn btn-warning px-5"
-                                                        onclick="guardarResultados(@item.Id, false)">
-                                                    Guardar Datos
-                                                </button>
-
-                                                <!-- Enviar con confirmación -->
-                                                <button class="btn btn-success px-5"
-                                                        onclick="confirmarEnvio(@item.Id)">
-                                                    Enviar Datos
-                                                </button>
-                                            </div>
-                                        }
-
-                                    </div>
-
-                                </div>
-                            </div>
                         </td>
                     </tr>
                 }
@@ -201,102 +100,69 @@
     </table>
 </div>
 
-@foreach (var item in Model.Where(l => l.Estado == EstadoBatch.LlenadoAprobado))
+
+
+@foreach (var lote in Model.Where(l => l.Estado == EstadoBatch.PendienteDeLlenado))
 {
-    <div class="modal fade" id="rfidModal-@item.Id" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Asignar RFID</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="rfidInput-@item.Id" class="form-label">Ingrese RFID</label>
-                    <input type="text" class="form-control" id="rfidInput-@item.Id" placeholder="RFID..." />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarRFID(@item.Id)">Guardar RFID</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("_EvaluarBatchModal", lote)
 }
 
-<div class="modal fade" id="confirmarEnvioModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">Confirmar envío</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                ¿Seguro que deseas enviar este batch? Una vez enviado ya no podrás modificar los resultados.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" id="btnConfirmarEnvio">Sí, enviar</button>
-            </div>
-        </div>
-    </div>
-</div>
+@foreach (var item in Model.Where(l => l.Estado == EstadoBatch.LlenadoAprobado))
+{
+    @await Html.PartialAsync("_AsignarRfidModal", item)
+}
+
+@await Html.PartialAsync("_ConfirmarEnvioModal")
+
 <!-- Render del partial del modal -->
 @await Html.PartialAsync("_NuevoBatchModal", (NuevoBatchModalViewModel)ViewBag.ModalVm)
 
 @section Scripts {
-    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
 
     <script>
-        let currentInput = null;
-        let currentMin = 0;
-        let currentMax = 0;
-        let lotePendienteEnvio = null;
-
-        // ⚡ Seleccionar input actual y rangos
-        function abrirPad(resultadoId, min, max) {
-            currentInput = document.getElementById(`valor-${resultadoId}`);
-            currentMin = min;
-            currentMax = max;
-        }
-
-                function padInput(loteId, num) {
-            if (currentInput) {
-                currentInput.value += num;
-                validar(currentInput, currentMin, currentMax);
-            }
-        }
-
-        function padDelete(loteId) {
-            if (currentInput) {
-                currentInput.value = currentInput.value.slice(0, -1);
-                validar(currentInput, currentMin, currentMax);
-            }
-        }
-
-        function padConfirm(loteId) {
-            currentInput = null;
-        }
+         $(document).ready(function () {
+            $('#tablaLotes').DataTable({
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
+                },
+                pageLength: 10,
+                responsive: true,
+                ordering: true,
+                columnDefs: [
+                    { orderable: false, targets: [4, 5] } // ⚡ evita ordenar columnas de acción y estado
+                ]
+            });
+        });
 
 
-        // ⚡ Función única de validación
-        function validar(input, min, max) {
-            const valor = parseFloat(input.value);
-            const estadoCell = document.getElementById(`estado-${input.id.replace("valor-", "")}`);
-            if (!isNaN(valor)) {
-                if (valor >= min && valor <= max) {
-                    estadoCell.innerHTML = "<span class='badge bg-success rounded-pill px-3'>OK</span>";
-                } else {
-                    estadoCell.innerHTML = "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>";
-                }
-            } else {
-                estadoCell.innerHTML = "";
-            }
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            // Selecciona todos los modales de RFID
+            document.querySelectorAll('[id^="rfidModal-"]').forEach(modalEl => {
+                modalEl.addEventListener('shown.bs.modal', function () {
+                    const input = modalEl.querySelector('input[id^="rfidInput-"]');
+                    if (input) {
+                        input.focus();
+                    }
+                });
+            });
+        });
 
-        // ⚡ Guardar resultados
+
+        // Guardar resultados desde modal de evaluación
         function guardarResultados(loteId, enviar) {
-            const inputs = document.querySelectorAll(`#batch-${loteId} input`);
+            const scope = document.querySelector(`#evaluarModal-${loteId}`);
+            if (!scope) {
+                alert("No se encontró el modal de evaluación para el lote " + loteId);
+                return;
+            }
+
+            const inputs = scope.querySelectorAll('input[id^="valor-"]');
             const resultados = [];
+
             inputs.forEach(i => {
                 resultados.push({
                     ResultadoId: i.id.replace("valor-", ""),
@@ -310,56 +176,138 @@
                 body: JSON.stringify({ loteId: loteId, resultados: resultados, enviar: enviar })
             })
             .then(r => {
-                if (r.ok) location.reload();
-                else alert("Error al guardar resultados");
+                if (r.ok) {
+                    // ⚡ Forzar instancia y ocultar modal
+                    const modalEl = document.getElementById(`evaluarModal-${loteId}`);
+                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+
+                    mostrarAlerta("Datos guardados correctamente", "success");
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    mostrarAlerta("Error al guardar resultados", "danger");
+                }
+            })
+            .catch(() => mostrarAlerta("Error de red al guardar resultados", "danger"));
+        }
+
+        function guardarRFID(loteId) {
+            const input = document.getElementById(`rfidInput-${loteId}`);
+            if (!input) {
+                mostrarAlerta("No se encontró el campo RFID", "danger");
+                return;
+            }
+
+            const rfid = input.value.trim();
+            if (rfid === "") {
+                mostrarAlerta("Debes ingresar un RFID válido", "warning");
+                return;
+            }
+
+            fetch('/Batch/GuardarRFID', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ LoteId: loteId, RFID: rfid })
+            })
+            .then(r => {
+                if (r.ok) {
+                    return r.json();
+                } else {
+                    throw new Error("Error al asignar RFID");
+                }
+            })
+            .then(data => {
+                // ⚡ Cierra el modal
+                const modalEl = document.getElementById(`rfidModal-${loteId}`);
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.hide();
+
+                // ⚡ Actualiza la celda de acción en la tabla
+                const fila = document.querySelector(`#tablaLotes tr td button[data-bs-target="#rfidModal-${loteId}"]`);
+                if (fila) {
+                    fila.outerHTML = `<span class="badge bg-info text-dark">RFID asignado</span>`;
+                }
+
+                mostrarAlerta("RFID asignado correctamente", "success");
+            })
+            .catch(err => {
+                mostrarAlerta(err.message, "danger");
             });
         }
 
-        // ⚡ Abrir modal de confirmación de envío
+        // Confirmación de envío
+        let lotePendienteEnvio = null;
+
         function confirmarEnvio(loteId) {
             lotePendienteEnvio = loteId;
-            const modal = new bootstrap.Modal(document.getElementById('confirmarEnvioModal'));
-            modal.show();
+
+            // ⚡ Cierra el modal de evaluación antes de abrir confirmación
+            const evalModalEl = document.getElementById(`evaluarModal-${loteId}`);
+            const evalModal = bootstrap.Modal.getInstance(evalModalEl);
+            if (evalModal) evalModal.hide();
+
+            const confirmModalEl = document.getElementById('confirmarEnvioModal');
+            const confirmModal = bootstrap.Modal.getInstance(confirmModalEl) || new bootstrap.Modal(confirmModalEl);
+            confirmModal.show();
         }
 
-        // ⚡ Acción al confirmar envío
-        document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function () {
             const btnConfirmarEnvio = document.getElementById("btnConfirmarEnvio");
             if (btnConfirmarEnvio) {
                 btnConfirmarEnvio.addEventListener("click", function () {
                     if (lotePendienteEnvio) {
                         guardarResultados(lotePendienteEnvio, true);
+
+                        // ⚡ Cierra el modal de confirmación
+                        const confirmModalEl = document.getElementById('confirmarEnvioModal');
+                        const confirmModal = bootstrap.Modal.getInstance(confirmModalEl) || new bootstrap.Modal(confirmModalEl);
+                        confirmModal.hide();
                     }
                 });
             }
         });
 
-        // ⚡ Guardar RFID
-        function guardarRFID(loteId) {
-            const valor = document.getElementById("rfidInput-" + loteId).value;
+        // Pad numérico
+        let currentInput = null;
+        let currentMin = 0;
+        let currentMax = 0;
 
-            fetch('/Batch/GuardarRFID', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ loteId: loteId, rfid: valor })
-            })
-            .then(r => {
-                if (r.ok) {
-                    mostrarAlerta("RFID guardado correctamente para el lote " + loteId, "success");
-
-                    const modal = bootstrap.Modal.getInstance(document.getElementById("rfidModal-" + loteId));
-                    modal.hide();
-
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    mostrarAlerta("Error al guardar RFID", "danger");
-                }
-            });
+        function abrirPad(resultadoId, min, max) {
+            currentInput = document.getElementById(`valor-${resultadoId}`);
+            currentMin = min;
+            currentMax = max;
         }
 
-        // ⚡ Mostrar alerta dinámica
+        function padInput(loteId, num) {
+            if (currentInput) {
+                currentInput.value += num;
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
+
+        function padDelete(loteId) {
+            if (currentInput) {
+                currentInput.value = currentInput.value.slice(0, -1);
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
+
+        function validar(input, min, max) {
+            const valor = parseFloat(input.value);
+            const estadoCell = document.getElementById(`estado-${input.id.replace("valor-", "")}`);
+            if (!isNaN(valor)) {
+                estadoCell.innerHTML = (valor >= min && valor <= max)
+                    ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
+                    : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>";
+            } else {
+                estadoCell.innerHTML = "";
+            }
+        }
+
+        // Alertas
         function mostrarAlerta(mensaje, tipo) {
             const contenedor = document.getElementById("alertas");
+            if (!contenedor) return;
             contenedor.innerHTML = `
                 <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
                     ${mensaje}
@@ -367,16 +315,5 @@
                 </div>
             `;
         }
-
-        // ⚡ Focus automático SOLO al abrir modal de RFID
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll("[id^='rfidModal-']").forEach(modalEl => {
-                modalEl.addEventListener('shown.bs.modal', function () {
-                    const loteId = modalEl.id.replace("rfidModal-", "");
-                    const input = document.getElementById("rfidInput-" + loteId);
-                    if (input) input.focus();
-                });
-            });
-        });
     </script>
 }
