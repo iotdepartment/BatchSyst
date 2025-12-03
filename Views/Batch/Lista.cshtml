@@ -1,12 +1,14 @@
 ﻿@model IEnumerable<Batch.Models.Lote>
 
+@{
+    ViewData["Title"] = "Registro de Batch Creados";
+}
+
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 
-<div class="container mt-4">
-    <h2 class="mb-3">Lotes pendientes o aprobados (sin RFID)</h2>
-
+<div class="container mt-3 bg-body p-5 rounded-4 shadow-sm">
     <table id="lotesTable" class="table table-striped table-bordered">
-        <thead class="table-light">
+        <thead class="table-dark">
             <tr>
                 <th class="text-center">Folio</th>
                 <th class="text-center">Componente</th>
@@ -67,7 +69,7 @@
                     url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
                 },
                 pageLength: 10,
-                order: [[3, "desc"]] // ⚡ ordena por fecha creación descendente
+                order: [[3, "asc"]] // ⚡ ordena por fecha creación descendente
             });
         });
     </script>

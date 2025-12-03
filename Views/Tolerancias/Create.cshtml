@@ -1,10 +1,10 @@
 ﻿@model Batch.Models.Tolerancia
 
 @{
-    ViewData["Title"] = "Ingresar Tolerancia";
+    ViewData["Title"] = "Crear Tolerancia";
 }
 
-<h2>Ingresar Tolerancia</h2>
+<div class="container mt-3 bg-body p-5 rounded-4 shadow-sm">
 
 <form asp-action="Create" method="post" class="row g-3">
     <div class="col-md-6">
@@ -36,3 +36,4 @@
     <div asp-validation-summary="All" class="text-danger"></div>
 </form>
 
+</div>

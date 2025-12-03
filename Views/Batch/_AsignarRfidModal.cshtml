@@ -12,8 +12,9 @@
                 <input type="text" class="form-control" id="rfidInput-@Model.Id" placeholder="RFID..." />
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="guardarRFID(@Model.Id)">Guardar RFID</button>
+                <button type="button" class="btn btn-success" onclick="guardarRFID(@Model.Id)">Guardar RFID</button>
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancelar</button>
+                
             </div>
         </div>
     </div>

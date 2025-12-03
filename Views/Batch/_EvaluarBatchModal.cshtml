@@ -86,11 +86,11 @@
                 @if (Model.Estado == EstadoBatch.PendienteDeLlenado)
                 {
                     <div class="modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn btn-warning px-5"
+                        <button type="button" class="btn btn-warning px-5 rounded-pill"
                                 onclick="guardarResultados(@Model.Id, false)">
                             Guardar Datos
                         </button>
-                        <button type="button" class="btn btn-success px-5"
+                        <button type="button" class="btn btn-success px-5 rounded-pill"
                                 onclick="confirmarEnvio(@Model.Id)">
                             Enviar Datos
                         </button>
