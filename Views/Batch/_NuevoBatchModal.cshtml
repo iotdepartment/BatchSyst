@@ -116,7 +116,8 @@
         }
     }
 
-    function guardarBatch() {
+
+            function guardarBatch() {
         fetch('/Batch/CrearBatch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -126,12 +127,36 @@
                 retrabajo: retrabajoSeleccionado
             })
         })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Error al crear el batch');
+        .then(async response => {
+
+            let data = null;
+
+            try {
+                data = await response.json();
+            } catch {
+                mostrarToast("Respuesta inválida del servidor", "danger");
+                return;
             }
+
+            if (!response.ok || data.success === false) {
+                  console.error("ERROR FETCH:", err);
+
+                mostrarToast(data.mensaje || "Error al crear el batch", "danger");
+                return;
+            }
+
+            // ✅ ÉXITO REAL
+            localStorage.setItem("toastSuccess", data.mensaje);
+
+            const modalEl = document.getElementById('nuevoBatchModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.hide();
+
+            location.reload();
+        })
+        .catch(err => {
+            console.error(err);
+            mostrarToast("Error de conexión al crear el batch", "danger");
         });
     }
 </script>

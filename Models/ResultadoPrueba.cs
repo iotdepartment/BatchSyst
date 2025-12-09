@@ -6,7 +6,7 @@ namespace Batch.Models
     {
         public int Id { get; set; }
         public int LoteId { get; set; }
-        public Lote Batch { get; set; }
+        public Lote Lote { get; set; }
 
         public int ToleranciaId { get; set; }
         public Tolerancia Tolerancia { get; set; }

@@ -22,47 +22,12 @@ namespace Batch.Controllers
         [HttpGet]
         public IActionResult Crear()
         {
-            var lotes = _context.Batches
-                .Include(l => l.Componente)
-                .Include(l => l.Resultados)
-                    .ThenInclude(r => r.Tolerancia)
-                .Where(l => l.RFID == null
-                         && (l.Estado == EstadoBatch.PendienteDeLlenado
-                             || l.Estado == EstadoBatch.LlenadoAprobado)) // ⚡ solo estado 0 y 1
-                .ToList();
-
-            var componentes = _context.Componentes
-                .OrderBy(c => c.Name)
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                })
-                .ToList();
-
-            var modalVm = new NuevoBatchModalViewModel
-            {
-                FechaInicio = DateTime.Now,
-                FechaExp = DateTime.Now.AddHours(8),
-                Componentes = componentes
-            };
-
-            ViewBag.ModalVm = modalVm;
-            return View(lotes);
-        }
-
-        // GET: Batches
-        [HttpGet]
-        public IActionResult CrearVdos()
-        {
-            var lotes = _context.Batches
-                .Include(l => l.Componente)
-                .Include(l => l.Resultados)
-                    .ThenInclude(r => r.Tolerancia)
-                .Where(l => l.RFID == null
-                         && (l.Estado == EstadoBatch.PendienteDeLlenado
-                             || l.Estado == EstadoBatch.LlenadoAprobado)) // ⚡ solo estado 0 y 1
-                .ToList();
+            var lotes = _context.Batches.Include
+                (l => l.Componente).Include
+                (l => l.Resultados).ThenInclude
+                (r => r.Tolerancia).Where
+                (l => l.RFID == null &&
+                (l.Estado == EstadoBatch.PendienteDeLlenado || l.Estado == EstadoBatch.LlenadoAprobado)).ToList();
 
             var componentes = _context.Componentes
                 .OrderBy(c => c.Name)
@@ -90,6 +55,19 @@ namespace Batch.Controllers
             var ahora = DateTime.Now;
             var fechaLaboral = DiaLaboralHelper.ObtenerFechaLaboral(ahora);
 
+            var tolerancias = _context.Tolerancias
+                .Where(t => t.ComponenteId == request.ComponenteId)
+                .ToList();
+
+            if (!tolerancias.Any())
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    mensaje = "El componente seleccionado no tiene tolerancias registradas. Agrega tolerancias antes de crear un batch."
+                });
+            }
+
             var folio = FolioHelper.CrearFolio(fechaLaboral, request.Linea, request.ComponenteId, _context, request.Retrabajo);
 
             var batch = new Lote
@@ -99,7 +77,7 @@ namespace Batch.Controllers
                 FechaExp = fechaLaboral.AddDays(7),
                 Folio = folio,
                 RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP",
-                RFID = null // ⚡ siempre nulo al crear
+                RFID = null
             };
 
             _context.Batches.Add(batch);
@@ -107,10 +85,6 @@ namespace Batch.Controllers
 
             batch.RegistroId = $"{fechaLaboral:yyyyMMdd}-{batch.Id}";
             _context.SaveChanges();
-
-            var tolerancias = _context.Tolerancias
-                .Where(t => t.ComponenteId == request.ComponenteId)
-                .ToList();
 
             foreach (var tol in tolerancias)
             {
@@ -125,7 +99,13 @@ namespace Batch.Controllers
 
             _context.SaveChanges();
 
-            return Ok(new { Folio = batch.Folio, RegistroId = batch.RegistroId });
+            return Ok(new
+            {
+                success = true,
+                mensaje = "Batch creado correctamente",
+                folio = batch.Folio,
+                registroId = batch.RegistroId
+            });
         }
 
         // Vista para capturar las pruebas de un lote
@@ -216,6 +196,7 @@ namespace Batch.Controllers
             return BadRequest("El lote no está aprobado, no se puede asignar RFID.");
         }
 
+        [HttpGet]
         public IActionResult Lista()
         {
             var lotes = _context.Batches
@@ -230,12 +211,14 @@ namespace Batch.Controllers
 
     }
 
+
+
+
     public class GuardarRFIDRequest
     {
         public int LoteId { get; set; }
         public string RFID { get; set; }
     }
-
 
     public class ResultadoInput
     {

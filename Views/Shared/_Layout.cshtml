@@ -133,9 +133,11 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
         </div>
 
         <main role="main" class="pb-3">
+           
             @RenderBody()
         </main>
     </div>
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
 
     <footer class="bg-dark text-white text-center fixed-bottom">
         © 2025 - Batch App - By IoT Department

@@ -1,0 +1,84 @@
+﻿@model IEnumerable<Lote>
+
+<table id="tablaLotes" class="table table-striped table-bordered">
+    <thead class="table-dark text-center">
+        <tr>
+            <th>Folio</th>
+            <th>Componente</th>
+            <th>Turno</th>
+            <th>Fecha de creación</th>
+            <th>Acción</th>
+            <th>Estado / Pruebas pendientes</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var pruebasPendientes = item.Resultados?
+                .Where(r => r.Valor == null)
+                .Select(r => r.Tolerancia?.Prueba)
+                .ToList();
+
+                <tr>
+                    <td class="text-center">@item.Folio</td>
+                    <td class="text-center">@item.Componente?.Name</td>
+                    <td class="text-center">@Batch.Helpers.DiaLaboralHelper.ObtenerTurno(item.FechaCreacion)</td>
+                    <td class="text-center">@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td class="text-center">
+                        @if (item.Estado == EstadoBatch.PendienteDeLlenado)
+                        {
+                            <button class="btn btn-sm btn-info rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#evaluarModal-@item.Id">
+                                Evaluar
+                            </button>
+                        }
+                        else if (item.Estado == EstadoBatch.LlenadoAprobado)
+                        {
+                            <button class="btn btn-sm btn-primary rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#rfidModal-@item.Id">
+                                Ingresar RFID
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-secondary rounded-pill" disabled>
+                                Evaluar
+                            </button>
+                        }
+                    </td>
+
+                    <td class="text-center">
+                        @if (pruebasPendientes != null && pruebasPendientes.Any())
+                        {
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                @foreach (var prueba in pruebasPendientes)
+                                {
+                                    <span class="badge bg-warning text-white">@prueba</span>
+                                }
+                            </div>
+                        }
+                        else if (item.Estado == EstadoBatch.PendienteDeLlenado)
+                        {
+                            <span class="badge bg-secondary text-white">No Existen Tolerancias</span>
+                        }
+                        else if (item.Estado == EstadoBatch.LlenadoAprobado)
+                        {
+                            <span class="badge bg-success">Aprobado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-white">Pendiente de envío</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        <!-- ✅ Si no hay datos, NO generamos filas -->
+    </tbody>
+</table>

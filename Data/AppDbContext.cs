@@ -37,7 +37,6 @@ namespace Batch.Data
                 entity.Property(e => e.BatchCar)
                       .HasMaxLength(50);
 
-                // Relación con Tolerancias
                 entity.HasMany(e => e.Tolerancias)
                       .WithOne(t => t.Componente)
                       .HasForeignKey(t => t.ComponenteId)
@@ -72,27 +71,23 @@ namespace Batch.Data
                       .HasMaxLength(30)
                       .IsRequired();
 
-                entity.HasIndex(e => e.Folio); // Folio puede repetirse
+                entity.HasIndex(e => e.Folio);
 
                 entity.Property(e => e.RegistroId)
                       .HasMaxLength(50)
                       .IsRequired();
 
                 entity.HasIndex(e => e.RegistroId)
-                      .IsUnique(); // RegistroId único
+                      .IsUnique();
 
-                // Relación con Componente
                 entity.HasOne(e => e.Componente)
                       .WithMany()
                       .HasForeignKey(e => e.ComponenteId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-               
-
-
-                // Relación con Resultados
+                // ✅ Relación corregida
                 entity.HasMany(e => e.Resultados)
-                      .WithOne(r => r.Batch)
+                      .WithOne(r => r.Lote)   // ← AQUÍ ESTABA EL ERROR
                       .HasForeignKey(r => r.LoteId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
@@ -107,13 +102,12 @@ namespace Batch.Data
 
                 entity.Property(e => e.Valor).HasColumnType("float");
 
-                // Relación con Tolerancia
                 entity.HasOne(r => r.Tolerancia)
                       .WithMany()
                       .HasForeignKey(r => r.ToleranciaId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Relación con Lote ya configurada arriba
+                // ✅ No necesitas nada más aquí
             });
 
 
