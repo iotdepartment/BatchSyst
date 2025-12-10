@@ -75,11 +75,7 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
                                         Nuevo Batch
                                     </a>
                                 </li>
-                                @* <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="Batch" asp-action="CrearVdos">
-                                        Nuevo Batch Version 2
-                                    </a>
-                                </li> *@
+                               
                             </ul>
                         </li>
 
@@ -89,21 +85,35 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
                                 Tolerancias
                             </a>
                         </li>
-                    </ul>
 
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Usuario" asp-action="Crear">
+                                Crear Usuario
+                            </a>
+                        </li>
+                    </ul>
+                    <!--
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown"
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> Usuario
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#">Perfil</a></li>
+                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#">Cerrar sesión</a></li>
+                        </ul>
+                    </li>
+                    -->
                     <!-- Usuario / Perfil -->
                     <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown"
-                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> Usuario
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="#">Perfil</a></li>
-                                <li><a class="dropdown-item" href="#">Configuración</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#">Cerrar sesión</a></li>
-                            </ul>
+                        
+
+                        <li>
+                            <button class="dropdown-item text-danger" onclick="cerrarSesion()">
+                                Cerrar sesión
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -136,7 +146,11 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
            
             @RenderBody()
         </main>
+        @section Scripts {
+            <partial name="_ValidationScriptsPartial" />
+        }
     </div>
+    
     <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
 
     <footer class="bg-dark text-white text-center fixed-bottom">
@@ -146,6 +160,59 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function mostrarToast(mensaje, tipo = "info") {
+            const toastContainer = document.getElementById("toastContainer");
+
+            const toast = document.createElement("div");
+            toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
+            toast.role = "alert";
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${mensaje}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+
+    <script>
+        function cerrarSesion() {
+
+            fetch('/Auth/Logout', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(res => {
+
+                if (res.success) {
+                    // ✅ Guardar mensaje para mostrarlo después de redirigir
+                    localStorage.setItem("toastMessage", res.message);
+                    localStorage.setItem("toastType", "success");
+
+                    // ✅ Redirigir al login
+                    window.location.href = "/Auth/Login";
+                    return;
+                }
+
+                mostrarToast("No se pudo cerrar sesión", "danger");
+            })
+            .catch(err => {
+                console.error(err);
+                mostrarToast("Error de red", "danger");
+            });
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

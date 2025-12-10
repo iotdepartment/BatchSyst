@@ -96,6 +96,23 @@ namespace Batch.Migrations
                     b.ToTable("Batches", (string)null);
                 });
 
+            modelBuilder.Entity("Batch.Models.Permiso", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permisos");
+                });
+
             modelBuilder.Entity("Batch.Models.ResultadoPrueba", b =>
                 {
                     b.Property<int>("Id")
@@ -125,6 +142,38 @@ namespace Batch.Migrations
                     b.ToTable("ResultadosPrueba", (string)null);
                 });
 
+            modelBuilder.Entity("Batch.Models.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("Batch.Models.RolPermiso", b =>
+                {
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermisoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RolId", "PermisoId");
+
+                    b.HasIndex("PermisoId");
+
+                    b.ToTable("RolPermisos");
+                });
+
             modelBuilder.Entity("Batch.Models.Tolerancia", b =>
                 {
                     b.Property<int>("Id")
@@ -151,6 +200,49 @@ namespace Batch.Migrations
                     b.HasIndex("ComponenteId");
 
                     b.ToTable("Tolerancias", (string)null);
+                });
+
+            modelBuilder.Entity("Batch.Models.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsuarioLogin")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("Batch.Models.UsuarioRol", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UsuarioId", "RolId");
+
+                    b.HasIndex("RolId");
+
+                    b.ToTable("UsuarioRoles");
                 });
 
             modelBuilder.Entity("Batch.Models.Lote", b =>
@@ -183,6 +275,25 @@ namespace Batch.Migrations
                     b.Navigation("Tolerancia");
                 });
 
+            modelBuilder.Entity("Batch.Models.RolPermiso", b =>
+                {
+                    b.HasOne("Batch.Models.Permiso", "Permiso")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("PermisoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Batch.Models.Rol", "Rol")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permiso");
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("Batch.Models.Tolerancia", b =>
                 {
                     b.HasOne("Batch.Models.Componente", "Componente")
@@ -194,6 +305,25 @@ namespace Batch.Migrations
                     b.Navigation("Componente");
                 });
 
+            modelBuilder.Entity("Batch.Models.UsuarioRol", b =>
+                {
+                    b.HasOne("Batch.Models.Rol", "Rol")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Batch.Models.Usuario", "Usuario")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("Batch.Models.Componente", b =>
                 {
                     b.Navigation("Tolerancias");
@@ -202,6 +332,23 @@ namespace Batch.Migrations
             modelBuilder.Entity("Batch.Models.Lote", b =>
                 {
                     b.Navigation("Resultados");
+                });
+
+            modelBuilder.Entity("Batch.Models.Permiso", b =>
+                {
+                    b.Navigation("RolPermisos");
+                });
+
+            modelBuilder.Entity("Batch.Models.Rol", b =>
+                {
+                    b.Navigation("RolPermisos");
+
+                    b.Navigation("UsuarioRoles");
+                });
+
+            modelBuilder.Entity("Batch.Models.Usuario", b =>
+                {
+                    b.Navigation("UsuarioRoles");
                 });
 #pragma warning restore 612, 618
         }

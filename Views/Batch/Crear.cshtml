@@ -85,7 +85,6 @@
              });
          });
 
-
         document.addEventListener("DOMContentLoaded", function () {
             // Selecciona todos los modales de RFID
             document.querySelectorAll('[id^="rfidModal-"]').forEach(modalEl => {
@@ -98,12 +97,10 @@
             });
         });
 
-
-        // Guardar resultados desde modal de evaluación
         function guardarResultados(loteId, enviar) {
             const scope = document.querySelector(`#evaluarModal-${loteId}`);
             if (!scope) {
-                alert("No se encontró el modal de evaluación para el lote " + loteId);
+                mostrarToast("No se encontró el modal de evaluación", "danger");
                 return;
             }
 
@@ -122,20 +119,33 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ loteId: loteId, resultados: resultados, enviar: enviar })
             })
-            .then(r => {
-                if (r.ok) {
-                    // ⚡ Forzar instancia y ocultar modal
-                    const modalEl = document.getElementById(`evaluarModal-${loteId}`);
-                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                    modal.hide();
+            .then(async r => {
 
-                    mostrarAlerta("Datos guardados correctamente", "success");
-                    setTimeout(() => location.reload(), 1200);
-                } else {
-                    mostrarAlerta("Error al guardar resultados", "danger");
+                let data = null;
+                try {
+                    data = await r.json();
+                } catch {
+                    mostrarToast("Respuesta inválida del servidor", "danger");
+                    return;
                 }
+
+                if (!r.ok || !data.success) {
+                    mostrarToast(data?.mensaje || "Error al guardar resultados", "danger");
+                    return;
+                }
+
+                // ✅ Cerrar modal
+                const modalEl = document.getElementById(`evaluarModal-${loteId}`);
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
+
+                // ✅ Guardar mensaje para mostrarlo DESPUÉS del refresh
+                localStorage.setItem("toastSuccess", data.mensaje);
+
+                // ✅ Refrescar página
+                location.reload();
             })
-            .catch(() => mostrarAlerta("Error de red al guardar resultados", "danger"));
+            .catch(() => mostrarToast("Error de red al guardar resultados", "danger"));
         }
 
         function guardarRFID(loteId) {
@@ -214,31 +224,6 @@
             }
         });
 
-        // Pad numérico
-        let currentInput = null;
-        let currentMin = 0;
-        let currentMax = 0;
-
-        function abrirPad(resultadoId, min, max) {
-            currentInput = document.getElementById(`valor-${resultadoId}`);
-            currentMin = min;
-            currentMax = max;
-        }
-
-        function padInput(loteId, num) {
-            if (currentInput) {
-                currentInput.value += num;
-                validar(currentInput, currentMin, currentMax);
-            }
-        }
-
-        function padDelete(loteId) {
-            if (currentInput) {
-                currentInput.value = currentInput.value.slice(0, -1);
-                validar(currentInput, currentMin, currentMax);
-            }
-        }
-
         function validar(input, min, max) {
             const valor = parseFloat(input.value);
             const estadoCell = document.getElementById(`estado-${input.id.replace("valor-", "")}`);
@@ -250,7 +235,6 @@
                 estadoCell.innerHTML = "";
             }
         }
-
 
         function mostrarToast(mensaje, tipo = "success") {
             const toastContainer = document.getElementById("toastContainer");
@@ -283,5 +267,32 @@
                 localStorage.removeItem("toastSuccess");
             }
         });
+    </script>
+
+    <script>
+         // Pad numérico
+        let currentInput = null;
+        let currentMin = 0;
+        let currentMax = 0;
+
+        function abrirPad(resultadoId, min, max) {
+            currentInput = document.getElementById(`valor-${resultadoId}`);
+            currentMin = min;
+            currentMax = max;
+        }
+
+        function padInput(loteId, num) {
+            if (currentInput) {
+                currentInput.value += num;
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
+
+        function padDelete(loteId) {
+            if (currentInput) {
+                currentInput.value = currentInput.value.slice(0, -1);
+                validar(currentInput, currentMin, currentMax);
+            }
+        }
     </script>
 }

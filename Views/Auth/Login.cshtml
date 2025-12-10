@@ -1,0 +1,139 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Login - Batch System</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+
+<body class="bg-light">
+
+    <!-- ✅ Contenedor centrado vertical y horizontal -->
+    <div class="d-flex flex-column justify-content-center align-items-center vh-100">
+
+        <!-- ✅ Tarjeta moderna -->
+        <div class="card shadow-lg p-4 rounded-4 bg-white" style="width: 100%; max-width: 420px;">
+
+            <!-- ✅ Logo centrado -->
+            <div class="text-center mb-3">
+                <img src="~/images/toyoda-gosei-logo.png"
+                     alt="Logo"
+                     class="img-fluid"
+                     style="max-height: 90px;">
+            </div>
+
+            <!-- ✅ Nombre del sistema -->
+            <h4 class="text-center fw-bold mb-4">Batch Management System</h4>
+
+            <!-- ✅ Inputs centrados -->
+            <div class="d-flex flex-column gap-3">
+
+                <div class="text-center">
+                    <label class="form-label fw-semibold">Usuario</label>
+                    <input id="usuarioLogin"
+                           class="form-control text-center"
+                           placeholder="Ingresa tu usuario" />
+                </div>
+
+                <div class="text-center">
+                    <label class="form-label fw-semibold">Contraseña</label>
+                    <input id="password"
+                           type="password"
+                           class="form-control text-center"
+                           placeholder="Ingresa tu contraseña" />
+                </div>
+
+            </div>
+
+            <!-- ✅ Botón centrado -->
+            <div class="d-flex justify-content-center mt-4">
+                <button class="btn btn-primary w-100 fw-semibold py-2" onclick="login()">
+                    Ingresar
+                </button>
+            </div>
+
+            <!-- ✅ Footer dentro del card -->
+            <div class="text-center text-muted small mt-4">
+                © 2025 - By IoT Department
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ✅ Toast container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function login() {
+
+            const data = {
+                usuarioLogin: document.getElementById("usuarioLogin").value,
+                password: document.getElementById("password").value
+            };
+
+            fetch('/Auth/Login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+
+                if (res.success) {
+                    localStorage.setItem("toastMessage", "Bienvenido");
+                    localStorage.setItem("toastType", "success");
+
+                    window.location.href = "/Batch/Crear";
+                    return;
+                }
+
+                mostrarToast(res.message, "danger");
+            })
+            .catch(err => {
+                console.error(err);
+                mostrarToast("Error de red", "danger");
+            });
+        }
+
+        // ✅ Mostrar toast después de redirección
+        document.addEventListener("DOMContentLoaded", function () {
+            const msg = localStorage.getItem("toastMessage");
+            const type = localStorage.getItem("toastType");
+
+            if (msg) {
+                mostrarToast(msg, type || "info");
+                localStorage.removeItem("toastMessage");
+                localStorage.removeItem("toastType");
+            }
+        });
+
+        // ✅ Función toast (Bootstrap puro)
+        function mostrarToast(mensaje, tipo = "info") {
+            const toastContainer = document.getElementById("toastContainer");
+
+            const toast = document.createElement("div");
+            toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
+            toast.role = "alert";
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${mensaje}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+
+</body>
+</html>

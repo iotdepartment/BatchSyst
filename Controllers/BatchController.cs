@@ -143,26 +143,28 @@ namespace Batch.Controllers
 
             _context.SaveChanges();
 
-            // Si se presionó "Enviar", completar vacíos con 0 y cambiar estado
+            bool enviado = false;
+
+            // Si se presionó "Enviar"
             if (request.Enviar)
             {
+                enviado = true;
+
                 var lote = _context.Batches
                     .Include(l => l.Resultados)
                     .FirstOrDefault(l => l.Id == request.LoteId);
 
                 if (lote != null)
                 {
-                    // ⚡ Forzar que los vacíos sean 0
                     foreach (var res in lote.Resultados)
                     {
                         if (!res.Valor.HasValue)
                         {
                             res.Valor = 0;
-                            res.EsValido = false; // 0 fuera de rango normalmente
+                            res.EsValido = false;
                         }
                     }
 
-                    // Evaluar estado
                     lote.Estado = lote.Resultados.All(r => r.EsValido)
                         ? EstadoBatch.LlenadoAprobado
                         : EstadoBatch.LlenadoRechazado;
@@ -172,7 +174,14 @@ namespace Batch.Controllers
                 }
             }
 
-            return Ok();
+            return Ok(new
+            {
+                success = true,
+                enviado = enviado,
+                mensaje = enviado
+                    ? "Resultados enviados correctamente"
+                    : "Datos guardados correctamente"
+            });
         }
 
         [HttpPost]
