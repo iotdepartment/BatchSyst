@@ -48,12 +48,12 @@ namespace Batch.Controllers
             ViewBag.ModalVm = modalVm;
             return View(lotes);
         }
+
         [HttpPost]
         public IActionResult CrearBatch([FromBody] BatchRequest request)
         {
             // ✅ Hora correcta de Matamoros
-            var zonaMatamoros = TimeZoneInfo.FindSystemTimeZoneById("America/Matamoros");
-            var ahora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zonaMatamoros);
+            var ahora = TimeZoneHelper.Ahora();
 
             var fechaLaboral = DiaLaboralHelper.ObtenerFechaLaboral(ahora);
 

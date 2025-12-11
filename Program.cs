@@ -19,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 app.UseSession();
 app.UseMiddleware<AuthMiddleware>();
+app.UseMiddleware<TimeZoneMiddleware>();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
