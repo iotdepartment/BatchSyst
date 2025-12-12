@@ -86,7 +86,7 @@
 </div>
 
 <script>
-           let componenteSeleccionado = null;
+    let componenteSeleccionado = null;
     let lineaSeleccionada = null;
     let retrabajoSeleccionado = false;
 
@@ -116,8 +116,7 @@
         }
     }
 
-
-            function guardarBatch() {
+    function guardarBatch() {
         fetch('/Batch/CrearBatch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -139,20 +138,26 @@
             }
 
             if (!response.ok || data.success === false) {
-                  console.error("ERROR FETCH:", err);
-
                 mostrarToast(data.mensaje || "Error al crear el batch", "danger");
                 return;
             }
 
-            // ✅ ÉXITO REAL
-            localStorage.setItem("toastSuccess", data.mensaje);
+            // ✅ Mostrar hora y zona horaria usada
+            console.log("Hora insertada:", data.horaInsertada);
+            console.log("Zona horaria usada:", data.zonaHoraria);
 
+            mostrarToast(
+                `Batch creado a las ${data.horaInsertada} (${data.zonaHoraria})`,
+                "success"
+            );
+
+            // ✅ Cerrar modal
             const modalEl = document.getElementById('nuevoBatchModal');
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.hide();
 
-            location.reload();
+            // // ✅ Recargar vista
+            // location.reload();
         })
         .catch(err => {
             console.error(err);

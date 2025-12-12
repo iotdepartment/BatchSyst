@@ -52,9 +52,18 @@ namespace Batch.Controllers
         [HttpPost]
         public IActionResult CrearBatch([FromBody] BatchRequest request)
         {
+            // ✅ Hora real de Matamoros (Linux + Windows)
+            TimeZoneInfo tz;
+            try
+            {
+                tz = TimeZoneInfo.FindSystemTimeZoneById("America/Matamoros"); // Linux
+            }
+            catch
+            {
+                tz = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time (Mexico)"); // Windows
+            }
 
-            // ✅ Hora correcta de Matamoros
-            var ahora = TimeZoneHelper.Ahora();
+            var ahora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
 
             var fechaLaboral = DiaLaboralHelper.ObtenerFechaLaboral(ahora);
 
@@ -87,7 +96,7 @@ namespace Batch.Controllers
             _context.SaveChanges();
 
             batch.RegistroId = $"{fechaLaboral:yyyyMMdd}-{batch.Id}";
-                _context.SaveChanges();
+            _context.SaveChanges();
 
             foreach (var tol in tolerancias)
             {
@@ -107,7 +116,9 @@ namespace Batch.Controllers
                 success = true,
                 mensaje = "Batch creado correctamente",
                 folio = batch.Folio,
-                registroId = batch.RegistroId
+                registroId = batch.RegistroId,
+                horaInsertada = ahora.ToString("yyyy-MM-dd HH:mm:ss"),
+                zonaHoraria = tz.Id
             });
         }
 
