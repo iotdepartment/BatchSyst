@@ -89,7 +89,10 @@ namespace Batch.Controllers
                 FechaExp = fechaLaboral.AddDays(7),
                 Folio = folio,
                 RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP",
-                RFID = null
+                RFID = null,
+
+                // ✅ ESTA ES LA LÍNEA QUE FALTABA
+                FechaCreacion = ahora
             };
 
             _context.Batches.Add(batch);
