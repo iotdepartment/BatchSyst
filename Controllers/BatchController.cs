@@ -86,7 +86,7 @@ namespace Batch.Controllers
             _context.SaveChanges();
 
             batch.RegistroId = $"{fechaLaboral:yyyyMMdd}-{batch.Id}";
-            _context.SaveChanges();
+                _context.SaveChanges();
 
             foreach (var tol in tolerancias)
             {

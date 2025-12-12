@@ -1,6 +1,5 @@
-﻿using Batch.Helper;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 public class TimeZoneMiddleware
 {

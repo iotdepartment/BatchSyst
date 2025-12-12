@@ -16,10 +16,14 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BatchSystemConnection")));
+
 var app = builder.Build();
+
 app.UseSession();
-app.UseMiddleware<AuthMiddleware>();
 app.UseMiddleware<TimeZoneMiddleware>();
+
+app.UseMiddleware<AuthMiddleware>();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
