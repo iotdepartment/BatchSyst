@@ -22,6 +22,7 @@ namespace Batch.Controllers
         [HttpGet]
         public IActionResult Crear()
         {
+
             var lotes = _context.Batches.Include
                 (l => l.Componente).Include
                 (l => l.Resultados).ThenInclude
@@ -90,8 +91,6 @@ namespace Batch.Controllers
                 Folio = folio,
                 RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP",
                 RFID = null,
-
-                // ✅ ESTA ES LA LÍNEA QUE FALTABA
                 FechaCreacion = ahora
             };
 
@@ -125,7 +124,9 @@ namespace Batch.Controllers
             });
         }
 
+
         // Vista para capturar las pruebas de un lote
+        [HttpGet]
         public IActionResult Evaluar(int id)
         {
             var lote = _context.Batches

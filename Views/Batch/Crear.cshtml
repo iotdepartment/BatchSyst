@@ -148,7 +148,7 @@
             .catch(() => mostrarToast("Error de red al guardar resultados", "danger"));
         }
 
-        function guardarRFID(loteId) {
+                function guardarRFID(loteId) {
             const input = document.getElementById(`rfidInput-${loteId}`);
             if (!input) {
                 mostrarAlerta("No se encontró el campo RFID", "danger");
@@ -174,18 +174,18 @@
                 }
             })
             .then(data => {
-                // ⚡ Cierra el modal
+
+                // ✅ Guardar mensaje en localStorage para mostrarlo después del reload
+                localStorage.setItem("toastMessage", "RFID asignado correctamente");
+                localStorage.setItem("toastType", "success");
+
+                // ✅ Cerrar modal
                 const modalEl = document.getElementById(`rfidModal-${loteId}`);
                 const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
                 modal.hide();
 
-                // ⚡ Actualiza la celda de acción en la tabla
-                const fila = document.querySelector(`#tablaLotes tr td button[data-bs-target="#rfidModal-${loteId}"]`);
-                if (fila) {
-                    fila.outerHTML = `<span class="badge bg-info text-dark">RFID asignado</span>`;
-                }
-
-                mostrarAlerta("RFID asignado correctamente", "success");
+                // ✅ Recargar página para actualizar tabla
+                location.reload();
             })
             .catch(err => {
                 mostrarAlerta(err.message, "danger");
@@ -260,11 +260,18 @@
         }
     </script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const msg = localStorage.getItem("toastSuccess");
+               // ✅ Mostrar toast enviado desde el login
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const msg = localStorage.getItem("toastMessage");
+            const type = localStorage.getItem("toastType");
+
             if (msg) {
-                mostrarToast(msg, "success");   // ✅ ESTA ES LA CORRECTA
-                localStorage.removeItem("toastSuccess");
+                mostrarToast(msg, type || "success");
+
+                // ✅ Limpiar para que no se repita
+                localStorage.removeItem("toastMessage");
+                localStorage.removeItem("toastType");
             }
         });
     </script>

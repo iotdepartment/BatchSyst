@@ -54,27 +54,49 @@
                     </td>
 
                     <td class="text-center">
-                        @if (pruebasPendientes != null && pruebasPendientes.Any())
+
+                        @{
+                            bool todasConValor = item.Resultados.All(r => r.Valor != null);
+                            bool todasAprobadas = item.Resultados.All(r => r.EsValido == true);
+                        }
+
+                        @* ✅ Si NO todas tienen valor → mostrar badges individuales *@
+                        @if (!todasConValor)
                         {
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                @foreach (var prueba in pruebasPendientes)
+                            <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
+                                @foreach (var resultado in item.Resultados)
                                 {
-                                    <span class="badge bg-warning text-white">@prueba</span>
-                                }
+                                    <span class="badge
+                                    @(resultado.Valor == null
+                                                                  ? "bg-secondary"
+                                                                  : resultado.EsValido == true
+                                                                      ? "bg-success"
+                                                                      : "bg-danger")
+                    text-white px-3 py-2 rounded-pill">
+
+                                        @resultado.Tolerancia.Prueba
+                                    </span>
+                                        }
                             </div>
-                        }
-                        else if (item.Estado == EstadoBatch.PendienteDeLlenado)
-                        {
-                            <span class="badge bg-secondary text-white">No Existen Tolerancias</span>
-                        }
-                        else if (item.Estado == EstadoBatch.LlenadoAprobado)
-                        {
-                            <span class="badge bg-success">Aprobado</span>
                         }
                         else
                         {
-                            <span class="badge bg-info text-white">Pendiente de envío</span>
+                            @* ✅ Todas tienen valor → mostrar solo el estado general *@
+
+                            @if (item.Estado != EstadoBatch.LlenadoAprobado)
+                            {
+                                <span class="badge bg-info text-white px-3 py-2 rounded-pill">
+                                    Pendiente de Envío
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success px-3 py-2 rounded-pill">
+                                    Aprobado
+                                </span>
+                            }
                         }
+
                     </td>
                 </tr>
             }
