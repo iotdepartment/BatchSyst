@@ -1,10 +1,12 @@
 ﻿using Batch.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Batch.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<Usuario>
+
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -16,11 +18,7 @@ namespace Batch.Data
         public DbSet<Tolerancia> Tolerancias { get; set; }
         public DbSet<Lote> Batches { get; set; }
         public DbSet<ResultadoPrueba> ResultadosPrueba { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
-        public DbSet<Rol> Roles { get; set; }
-        public DbSet<Permiso> Permisos { get; set; }
-        public DbSet<UsuarioRol> UsuarioRoles { get; set; }
-        public DbSet<RolPermiso> RolPermisos { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -113,33 +111,7 @@ namespace Batch.Data
 
             });
 
-            // UsuarioRol
-            modelBuilder.Entity<UsuarioRol>()
-                .HasKey(ur => new { ur.UsuarioId, ur.RolId });
-
-            modelBuilder.Entity<UsuarioRol>()
-                .HasOne(ur => ur.Usuario)
-                .WithMany(u => u.UsuarioRoles)
-                .HasForeignKey(ur => ur.UsuarioId);
-
-            modelBuilder.Entity<UsuarioRol>()
-                .HasOne(ur => ur.Rol)
-                .WithMany(r => r.UsuarioRoles)
-                .HasForeignKey(ur => ur.RolId);
-
-            // RolPermiso
-            modelBuilder.Entity<RolPermiso>()
-                .HasKey(rp => new { rp.RolId, rp.PermisoId });
-
-            modelBuilder.Entity<RolPermiso>()
-                .HasOne(rp => rp.Rol)
-                .WithMany(r => r.RolPermisos)
-                .HasForeignKey(rp => rp.RolId);
-
-            modelBuilder.Entity<RolPermiso>()
-                .HasOne(rp => rp.Permiso)
-                .WithMany(p => p.RolPermisos)
-                .HasForeignKey(rp => rp.PermisoId);
+          
 
 
         }

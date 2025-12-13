@@ -1,0 +1,27 @@
+﻿<div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Editar Usuario</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input id="e_id" type="hidden" />
+                <input id="e_userName" class="form-control mb-2" placeholder="Usuario" />
+                <input id="e_nombre" class="form-control mb-2" placeholder="Nombre" />
+                <select id="e_rol" class="form-select">
+                    <option>Admin</option>
+                    <option>Operador</option>
+                    <option>Supervisor</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-warning" onclick="editarUsuario()">Guardar Cambios</button>
+            </div>
+
+        </div>
+    </div>
+</div>

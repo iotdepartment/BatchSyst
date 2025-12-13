@@ -19,16 +19,21 @@ namespace Batch.Controllers
         }
 
         // GET: Batches
+        //[AuthorizeRol("Administrador")]
         [HttpGet]
         public IActionResult Crear()
         {
+            
+            
 
-            var lotes = _context.Batches.Include
-                (l => l.Componente).Include
-                (l => l.Resultados).ThenInclude
-                (r => r.Tolerancia).Where
-                (l => l.RFID == null &&
-                (l.Estado == EstadoBatch.PendienteDeLlenado || l.Estado == EstadoBatch.LlenadoAprobado)).ToList();
+            // ✅ Tu lógica original
+            var lotes = _context.Batches
+                .Include(l => l.Componente)
+                .Include(l => l.Resultados).ThenInclude(r => r.Tolerancia)
+                .Where(l => l.RFID == null &&
+                       (l.Estado == EstadoBatch.PendienteDeLlenado ||
+                        l.Estado == EstadoBatch.LlenadoAprobado))
+                .ToList();
 
             var componentes = _context.Componentes
                 .OrderBy(c => c.Name)
@@ -47,6 +52,7 @@ namespace Batch.Controllers
             };
 
             ViewBag.ModalVm = modalVm;
+
             return View(lotes);
         }
 

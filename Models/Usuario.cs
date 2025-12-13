@@ -1,15 +1,6 @@
-﻿namespace Batch.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+public class Usuario : IdentityUser
 {
-    public class Usuario
-    {
-        public int Id { get; set; }
-
-        public string Nombre { get; set; }
-        public string UsuarioLogin { get; set; }
-        public string PasswordHash { get; set; }
-
-        public bool Activo { get; set; } = true;
-
-        public ICollection<UsuarioRol> UsuarioRoles { get; set; }
-    }
+    public string Nombre { get; set; }
 }

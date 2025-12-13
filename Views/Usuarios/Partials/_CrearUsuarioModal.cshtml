@@ -1,0 +1,27 @@
+﻿<div class="modal fade" id="modalCrear" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Crear Usuario</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input id="c_userName" class="form-control mb-2" placeholder="Usuario" />
+                <input id="c_nombre" class="form-control mb-2" placeholder="Nombre" />
+                <input id="c_password" class="form-control mb-2" placeholder="Contraseña" type="password" />
+                <select id="c_rol" class="form-select">
+                    <option>Admin</option>
+                    <option>Operador</option>
+                    <option>Supervisor</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="crearUsuario()">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</div>

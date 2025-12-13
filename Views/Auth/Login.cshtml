@@ -8,7 +8,6 @@
     <meta charset="utf-8" />
     <title>Login - Batch System</title>
 
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/cosmo/bootstrap.min.css">
 </head>
@@ -74,6 +73,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+
         function login() {
 
             const data = {
@@ -83,26 +83,30 @@
 
             fetch('/Auth/Login', {
                 method: 'POST',
+                credentials: 'include', // ✅ NECESARIO PARA QUE IDENTITY GUARDE LA COOKIE
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
-            .then(r => r.json())
-            .then(res => {
+                .then(r => r.json())
+                .then(res => {
 
-                if (res.success) {
-                    localStorage.setItem("toastMessage", "Bienvenido al sistema de Batch");
-                    localStorage.setItem("toastType", "success");
+                    if (res.success) {
 
-                    window.location.href = "/Batch/Crear";
-                    return;
-                }
+                        // ✅ Guardar mensaje para mostrar después de redirección
+                        localStorage.setItem("toastMessage", "Bienvenido al sistema de Batch");
+                        localStorage.setItem("toastType", "success");
 
-                mostrarToast(res.message, "danger");
-            })
-            .catch(err => {
-                console.error(err);
-                mostrarToast("Error de red", "danger");
-            });
+                        // ✅ Redirigir a la vista protegida
+                        window.location.href = "/Batch/Crear";
+                        return;
+                    }
+
+                    mostrarToast(res.message, "danger");
+                })
+                .catch(err => {
+                    console.error(err);
+                    mostrarToast("Error de red", "danger");
+                });
         }
 
         // ✅ Mostrar toast después de redirección

@@ -3,7 +3,11 @@ var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
 bool isLoginPage = currentController == "Auth" && currentAction == "Login";
 
+
 }
+
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<Usuario> UserManager
 
 @using Batch.Helpers
 @{
@@ -87,7 +91,7 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Usuario" asp-action="Index">
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Usuarios" asp-action="Index">
                                 Crear Usuario
                             </a>
                         </li>
@@ -107,15 +111,35 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
                     </li>
                     -->
                     <!-- Usuario / Perfil -->
-                    <ul class="navbar-nav">
-                        
+                    <ul class="navbar-nav ms-auto">
 
-                        <li>
-                            <button class="dropdown-item text-danger" onclick="cerrarSesion()">
-                                Cerrar sesión
-                            </button>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            var usuario = await UserManager.GetUserAsync(User);
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle fw-semibold" href="#" role="button" data-bs-toggle="dropdown">
+                                    👤 @usuario.Nombre
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item text-danger fw-semibold" href="/Auth/Logout">
+                                            Cerrar sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Auth/Login">Iniciar sesión</a>
+                            </li>
+                        }
+
                     </ul>
+
                 </div>
             </div>
         </nav>
