@@ -1,34 +1,37 @@
-﻿@model IEnumerable<Usuario>
+﻿@using Batch.ViewModels
+@model IEnumerable<UsuarioConRolViewModel>
 
 @{
     ViewData["Title"] = "Usuarios del Sistema";
-
 }
-
 
 <div class="container mt-3 bg-body px-5 pb-5 pt-4 rounded-4 shadow-sm">
 
     <div class="d-flex justify-content-between mb-3">
         <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#modalCrear">
-            Crear Usuario
+            Crear Usuario <i class="bi bi-person-plus"></i>
         </button>
     </div>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
-                <th>Usuario</th>
-                <th>Nombre</th>
-                <th>Acciones</th>
+                <th class="text-center">Usuario</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center">Rol</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody id="tablaUsuarios">
             @foreach (var u in Model)
             {
                 <tr data-id="@u.Id">
-                    <td>@u.UserName</td>
-                    <td>@u.Nombre</td>
-                    <td>
+                    <td class="text-center">@u.UserName</td>
+                    <td class="text-center">@u.Nombre</td>
+                    <td class="text-center">
+                        <span class="badge bg-info text-white text-center">@u.Rol</span>
+                    </td>
+                    <td class="text-center">
                         <button class="btn btn-sm btn-warning" onclick="abrirEditar('@u.Id')">Editar</button>
                         <button class="btn btn-sm btn-danger" onclick="abrirEliminar('@u.Id')">Eliminar</button>
                     </td>
@@ -37,118 +40,133 @@
         </tbody>
     </table>
 </div>
+
 <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
-<!-- ✅ IMPORTAR PARTIALS -->
+
 @await Html.PartialAsync("Partials/_CrearUsuarioModal")
 @await Html.PartialAsync("Partials/_EditarUsuarioModal")
 @await Html.PartialAsync("Partials/_EliminarUsuarioModal")
 
-@section scripts{
+@section scripts {
 
     <script>
-function crearUsuario() {
-    const data = {
-        userName: c_userName.value,
-        nombre: c_nombre.value,
-        password: c_password.value,
-        rol: c_rol.value
-    };
+        function crearUsuario() {
+            const data = {
+                userName: document.getElementById("c_userName").value,
+                nombre: document.getElementById("c_nombre").value,
+                password: document.getElementById("c_password").value,
+                rol: document.getElementById("c_rol").value
+            };
 
-    fetch('/Usuarios/Crear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(r => {
-        if (r.ok) {
-            localStorage.setItem("toastMessage", "Usuario creado correctamente");
-            localStorage.setItem("toastType", "success");
-        } else {
-            localStorage.setItem("toastMessage", "Error al crear usuario");
-            localStorage.setItem("toastType", "danger");
+            fetch('/Usuarios/Crear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => {
+                if (r.ok) {
+                    localStorage.setItem("toastMessage", "Usuario creado correctamente");
+                    localStorage.setItem("toastType", "success");
+                } else {
+                    localStorage.setItem("toastMessage", "Error al crear usuario");
+                    localStorage.setItem("toastType", "danger");
+                }
+                location.reload();
+            });
         }
-        location.reload();
-    });
-}
 
-   function editarUsuario() {
-    const data = {
-        id: e_id.value,
-        userName: e_userName.value,
-        nombre: e_nombre.value,
-        rol: e_rol.value
-    };
+        function abrirEditar(id) {
+            fetch('/Usuarios/Obtener?id=' + id)
+                .then(r => r.json())
+                .then(u => {
 
-    fetch('/Usuarios/Editar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(r => {
-        if (r.ok) {
-            localStorage.setItem("toastMessage", "Usuario actualizado correctamente");
-            localStorage.setItem("toastType", "success");
-        } else {
-            localStorage.setItem("toastMessage", "Error al actualizar usuario");
-            localStorage.setItem("toastType", "danger");
+                    document.getElementById("e_id").value = u.id;
+                    document.getElementById("e_userName").value = u.userName;
+                    document.getElementById("e_nombre").value = u.nombre;
+                    document.getElementById("e_rol").value = u.rol;
+
+                    new bootstrap.Modal(document.getElementById('modalEditar')).show();
+                });
         }
-        location.reload();
-    });
-}
 
-    function abrirEliminar(id) {
-        del_id.value = id;
-        new bootstrap.Modal(document.getElementById('modalEliminar')).show();
-    }
+        function editarUsuario() {
+            const data = {
+                id: document.getElementById("e_id").value,
+                userName: document.getElementById("e_userName").value,
+                nombre: document.getElementById("e_nombre").value,
+                rol: document.getElementById("e_rol").value
+            };
 
-   function confirmarEliminar() {
-    fetch('/Usuarios/Eliminar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(del_id.value)
-    })
-    .then(r => {
-        if (r.ok) {
-            localStorage.setItem("toastMessage", "Usuario eliminado correctamente");
-            localStorage.setItem("toastType", "success");
-        } else {
-            localStorage.setItem("toastMessage", "Error al eliminar usuario");
-            localStorage.setItem("toastType", "danger");
+            fetch('/Usuarios/Editar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => {
+                if (r.ok) {
+                    localStorage.setItem("toastMessage", "Usuario actualizado correctamente");
+                    localStorage.setItem("toastType", "success");
+                } else {
+                    localStorage.setItem("toastMessage", "Error al actualizar usuario");
+                    localStorage.setItem("toastType", "danger");
+                }
+                location.reload();
+            });
         }
-        location.reload();
-    });
-}
-</script>
 
-<script>
-    function mostrarToast(mensaje, tipo = "info") {
-        const toastContainer = document.getElementById("toastContainer");
-
-        const toast = document.createElement("div");
-        toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
-        toast.role = "alert";
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${mensaje}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-
-        toastContainer.appendChild(toast);
-
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // ✅ Mostrar toast después de redirección
-    document.addEventListener("DOMContentLoaded", function () {
-        const msg = localStorage.getItem("toastMessage");
-        const type = localStorage.getItem("toastType");
-
-        if (msg) {
-            mostrarToast(msg, type || "info");
-            localStorage.removeItem("toastMessage");
-            localStorage.removeItem("toastType");
+        function abrirEliminar(id) {
+            document.getElementById("del_id").value = id;
+            new bootstrap.Modal(document.getElementById('modalEliminar')).show();
         }
-    });
-</script>
+
+        function confirmarEliminar() {
+            fetch('/Usuarios/Eliminar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(document.getElementById("del_id").value)
+            })
+            .then(r => {
+                if (r.ok) {
+                    localStorage.setItem("toastMessage", "Usuario eliminado correctamente");
+                    localStorage.setItem("toastType", "success");
+                } else {
+                    localStorage.setItem("toastMessage", "Error al eliminar usuario");
+                    localStorage.setItem("toastType", "danger");
+                }
+                location.reload();
+            });
+        }
+    </script>
+
+    <script>
+        function mostrarToast(mensaje, tipo = "info") {
+            const toastContainer = document.getElementById("toastContainer");
+
+            const toast = document.createElement("div");
+            toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
+            toast.role = "alert";
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${mensaje}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const msg = localStorage.getItem("toastMessage");
+            const type = localStorage.getItem("toastType");
+
+            if (msg) {
+                mostrarToast(msg, type || "info");
+                localStorage.removeItem("toastMessage");
+                localStorage.removeItem("toastType");
+            }
+        });
+    </script>
+
 }

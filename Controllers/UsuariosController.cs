@@ -18,10 +18,25 @@ public class UsuariosController : Controller
 
     // ✅ LISTADO
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var usuarios = _userManager.Users.ToList();
-        return View(usuarios);
+        var lista = new List<UsuarioConRolViewModel>();
+
+        foreach (var u in usuarios)
+        {
+            var roles = await _userManager.GetRolesAsync(u);
+
+            lista.Add(new UsuarioConRolViewModel
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Nombre = u.Nombre,
+                Rol = roles.FirstOrDefault() ?? "Sin rol"
+            });
+        }
+
+        return View(lista);
     }
 
     // ✅ CREAR USUARIO

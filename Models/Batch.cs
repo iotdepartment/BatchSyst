@@ -16,13 +16,19 @@ namespace Batch.Models
     public class Lote
     {
         public int Id { get; set; }
+
         public string Folio { get; set; }
+
         public string RegistroId { get; set; }
 
         public int ComponenteId { get; set; }
+
         public Componente Componente { get; set; }
 
+        public int Turno { get; set; } // 1, 2 o 3
+
         public DateTime FechaInicio { get; set; }
+
         public DateTime FechaExp { get; set; }
 
         public EstadoBatch Estado { get; set; } = EstadoBatch.PendienteDeLlenado;
@@ -31,13 +37,16 @@ namespace Batch.Models
 
         public string? RFID { get; set; }
 
-        // ⚡ Nueva propiedad: se asigna automáticamente al crear
         [DataType(DataType.DateTime)]
         public DateTime FechaCreacion { get; set; }
 
         public ICollection<ResultadoPrueba> Resultados { get; set; }
 
-        // ⚡ Constructor que asigna automáticamente la fecha de creación
+        // ✅ NUEVO: Usuario que creó el batch
+        public string UsuarioId { get; set; }
+
+        public Usuario Usuario { get; set; }
+
         public Lote()
         {
             FechaCreacion = DateTime.Now;

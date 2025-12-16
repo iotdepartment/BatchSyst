@@ -89,12 +89,14 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
                                 Tolerancias
                             </a>
                         </li>
-
+                        @if (User.IsInRole("Admin"))
+                            {
                         <li class="nav-item">
                             <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Usuarios" asp-action="Index">
-                                Crear Usuario
+                                Usuarios
                             </a>
                         </li>
+                            }
                     </ul>
                     <!--
                     <li class="nav-item dropdown">

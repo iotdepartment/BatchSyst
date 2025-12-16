@@ -25,7 +25,29 @@
                 <tr>
                     <td class="text-center">@item.Folio</td>
                     <td class="text-center">@item.Componente?.Name</td>
-                    <td class="text-center">@Batch.Helpers.DiaLaboralHelper.ObtenerTurno(item.FechaCreacion)</td>
+
+                    <!-- ✅ Turno con badge -->
+                    <td class="text-center">
+                        @switch (item.Turno)
+                        {
+                            case 1:
+                                @:<span class="badge bg-success rounded-pill px-3 py-2">Turno 1</span>
+                                break;
+
+                            case 2:
+                                @:<span class="badge bg-primary rounded-pill px-3 py-2">Turno 2</span>
+                                break;
+
+                            case 3:
+                                @:<span class="badge bg-warning text-dark rounded-pill px-3 py-2">Turno 3</span>
+                                break;
+
+                            default:
+                                @:<span class="badge bg-secondary rounded-pill px-3 py-2">Desconocido</span>
+                                break;
+                        }
+                    </td>
+
                     <td class="text-center">@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
 
                     <td class="text-center">
@@ -67,12 +89,12 @@
                                 @foreach (var resultado in item.Resultados)
                                 {
                                     <span class="badge
-                                    @(resultado.Valor == null
-                                                                  ? "bg-secondary"
-                                                                  : resultado.EsValido == true
-                                                                      ? "bg-success"
-                                                                      : "bg-danger")
-                    text-white px-3 py-2 rounded-pill">
+                                                        @(resultado.Valor == null
+                                                                                      ? "bg-secondary"
+                                                                                      : resultado.EsValido == true
+                                                                                          ? "bg-success"
+                                                                                          : "bg-danger")
+                                        text-white rounded-pill">
 
                                         @resultado.Tolerancia.Prueba
                                     </span>
@@ -85,13 +107,13 @@
 
                             @if (item.Estado != EstadoBatch.LlenadoAprobado)
                             {
-                                <span class="badge bg-info text-white px-3 py-2 rounded-pill">
+                                <span class="badge bg-info text-white rounded-pill">
                                     Pendiente de Envío
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-success px-3 py-2 rounded-pill">
+                                <span class="badge bg-success rounded-pill">
                                     Aprobado
                                 </span>
                             }
@@ -101,6 +123,5 @@
                 </tr>
             }
         }
-        <!-- ✅ Si no hay datos, NO generamos filas -->
     </tbody>
 </table>

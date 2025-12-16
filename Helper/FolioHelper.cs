@@ -4,18 +4,35 @@ namespace Batch.Helper
 {
     public static class FolioHelper
     {
-        public static string CrearFolio(DateTime fecha, string linea, int componenteId, AppDbContext context, bool retrabajo = false)
+        public static string CrearFolio(DateTime ahora, int turno, string linea, int componenteId, AppDbContext context, bool retrabajo = false)
         {
-            // Año → letra automática (2025 = V)
-            char yearLetter = (char)('V' + (fecha.Year - 2025));
+            // ✅ Determinar fecha del folio según tu lógica
+            DateTime fechaFolio;
 
-            // Mes → letra automática (Enero = A, Diciembre = L)
-            char monthLetter = (char)('A' + (fecha.Month - 1));
+            // ⏰ Entre 00:00 y 06:59
+            if (ahora.TimeOfDay < new TimeSpan(7, 0, 0))
+            {
+                if (turno == 2)
+                    fechaFolio = ahora.Date.AddDays(-1); // turno 2 → ayer
+                else
+                    fechaFolio = ahora.Date;            // turno 3 → hoy
+            }
+            else
+            {
+                // ✅ Horario normal → hoy
+                fechaFolio = ahora.Date;
+            }
 
-            // Día → número con dos dígitos
-            string day = fecha.Day.ToString("00");
+            // ✅ Año → letra automática (2025 = V)
+            char yearLetter = (char)('V' + (fechaFolio.Year - 2025));
 
-            // Línea → letra (A, B, C)
+            // ✅ Mes → letra automática (Enero = A, Diciembre = L)
+            char monthLetter = (char)('A' + (fechaFolio.Month - 1));
+
+            // ✅ Día → número con dos dígitos
+            string day = fechaFolio.Day.ToString("00");
+
+            // ✅ Línea → letra (A, B, C)
             string lineaLetter = linea switch
             {
                 "1" => "A",
@@ -24,16 +41,20 @@ namespace Batch.Helper
                 _ => "X"
             };
 
-            // Número de batch por componente en ese día
+            // ✅ Prefijo del folio (sin consecutivo)
+            string prefijo = $"{yearLetter}{monthLetter}{day}{lineaLetter}";
+
+            // ✅ Contar folios existentes con ese prefijo
             var totalHoy = context.Batches
-                .Count(b => b.ComponenteId == componenteId && b.FechaInicio.Date == fecha.Date) + 1;
+                .Count(b => b.ComponenteId == componenteId &&
+                            b.Folio.StartsWith(prefijo)) + 1;
 
             string consecutivo = totalHoy.ToString("00");
 
-            // Folio final
-            var folio = $"{yearLetter}{monthLetter}{day}{lineaLetter}{consecutivo}";
+            // ✅ Folio final
+            var folio = prefijo + consecutivo;
 
-            // Si es retrabajo, anteponer R
+            // ✅ Si es retrabajo, anteponer R
             if (retrabajo)
                 folio = "R" + folio;
 

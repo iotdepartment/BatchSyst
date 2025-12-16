@@ -3,29 +3,29 @@ using Batch.Helper;
 using Batch.Helpers;
 using Batch.Models;
 using Batch.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Batch.Controllers
 {
     public class BatchController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<Usuario> _userManager;
 
-        public BatchController(AppDbContext context)
+        public BatchController(AppDbContext context, UserManager<Usuario> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Batches
-        //[AuthorizeRol("Administrador")]
         [HttpGet]
         public IActionResult Crear()
         {
-            
-            
-
             // ✅ Tu lógica original
             var lotes = _context.Batches
                 .Include(l => l.Componente)
@@ -59,21 +59,26 @@ namespace Batch.Controllers
         [HttpPost]
         public IActionResult CrearBatch([FromBody] BatchRequest request)
         {
-            // ✅ Hora real de Matamoros (Linux + Windows)
+            // ✅ Obtener usuario autenticado
+            var usuarioId = _userManager.GetUserId(User);
+
+            // ✅ Hora real de Matamoros
             TimeZoneInfo tz;
             try
             {
-                tz = TimeZoneInfo.FindSystemTimeZoneById("America/Matamoros"); // Linux
+                tz = TimeZoneInfo.FindSystemTimeZoneById("America/Matamoros");
             }
             catch
             {
-                tz = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time (Mexico)"); // Windows
+                tz = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time (Mexico)");
             }
 
             var ahora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
 
+            // ✅ Fecha laboral (para FechaInicio)
             var fechaLaboral = DiaLaboralHelper.ObtenerFechaLaboral(ahora);
 
+            // ✅ Validar tolerancias
             var tolerancias = _context.Tolerancias
                 .Where(t => t.ComponenteId == request.ComponenteId)
                 .ToList();
@@ -83,12 +88,21 @@ namespace Batch.Controllers
                 return BadRequest(new
                 {
                     success = false,
-                    mensaje = "El componente seleccionado no tiene tolerancias registradas. Agrega tolerancias antes de crear un batch."
+                    mensaje = "El componente seleccionado no tiene tolerancias registradas."
                 });
             }
 
-            var folio = FolioHelper.CrearFolio(fechaLaboral, request.Linea, request.ComponenteId, _context, request.Retrabajo);
+            // ✅ Folio normal (sin lógica de turno todavía)
+            var folio = FolioHelper.CrearFolio(
+                ahora,                 // ✅ hora actual
+                request.Turno,         // ✅ turno seleccionado
+                request.Linea,         // ✅ línea seleccionada
+                request.ComponenteId,  // ✅ componente
+                _context,              // ✅ contexto
+                request.Retrabajo      // ✅ retrabajo
+            );
 
+            // ✅ Crear batch con turno incluido
             var batch = new Lote
             {
                 ComponenteId = request.ComponenteId,
@@ -97,15 +111,22 @@ namespace Batch.Controllers
                 Folio = folio,
                 RegistroId = $"{fechaLaboral:yyyyMMdd}-TEMP",
                 RFID = null,
-                FechaCreacion = ahora
+                FechaCreacion = ahora,
+
+                UsuarioId = usuarioId,
+
+                // ✅ Insertar turno normal
+                Turno = request.Turno
             };
 
             _context.Batches.Add(batch);
             _context.SaveChanges();
 
+            // ✅ Actualizar RegistroId con el ID real
             batch.RegistroId = $"{fechaLaboral:yyyyMMdd}-{batch.Id}";
             _context.SaveChanges();
 
+            // ✅ Crear resultados de prueba
             foreach (var tol in tolerancias)
             {
                 _context.ResultadosPrueba.Add(new ResultadoPrueba
@@ -125,6 +146,8 @@ namespace Batch.Controllers
                 mensaje = "Batch creado correctamente",
                 folio = batch.Folio,
                 registroId = batch.RegistroId,
+                usuarioId = usuarioId,
+                turno = batch.Turno,
                 horaInsertada = ahora.ToString("yyyy-MM-dd HH:mm:ss"),
                 zonaHoraria = tz.Id
             });
@@ -234,6 +257,7 @@ namespace Batch.Controllers
         {
             var lotes = _context.Batches
                 .Include(l => l.Componente)
+                .Include(l => l.Usuario) // ✅ incluir usuario creador
                 .Include(l => l.Resultados)
                     .ThenInclude(r => r.Tolerancia)
                 .OrderByDescending(l => l.FechaCreacion)
@@ -243,9 +267,6 @@ namespace Batch.Controllers
         }
 
     }
-
-
-
 
     public class GuardarRFIDRequest
     {
@@ -261,6 +282,7 @@ namespace Batch.Controllers
 
     public class BatchRequest
     {
+        public int Turno { get; set; } // 1, 2 o 3
         public int ComponenteId { get; set; }
         public string Linea { get; set; }
         public bool Retrabajo { get; set; }

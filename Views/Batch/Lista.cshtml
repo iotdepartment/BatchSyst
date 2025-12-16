@@ -5,58 +5,65 @@
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-
-<div class="container mt-3 bg-body p-5 rounded-4 shadow-sm">
-    <table id="lotesTable" class="table table-striped table-bordered">
-        <thead class="table-dark">
+@* 
+<div class="container mt-3 bg-body p-5 rounded-4 shadow-sm"> *@
+<table id="lotesTable" class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th class="text-center">Batch</th>
+            <th class="text-center">Componente</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Fecha Creación</th>
+            <th class="text-center">Creado por</th> <!-- ✅ NUEVA COLUMNA -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
             <tr>
-                <th class="text-center">Batch</th>
-                <th class="text-center">Componente</th>
-                <th class="text-center">Estado</th>
-                <th class="text-center">Fecha Creación</th>
+                <td class="text-center">@item.Folio</td>
+                <td class="text-center">@(item.Componente?.Name ?? "Sin componente")</td>
+                <td class="text-center">
+                    @switch (item.Estado)
+                    {
+                        case EstadoBatch.PendienteDeLlenado:
+                            @:<span class="badge bg-secondary">Pendiente</span>
+                            break;
+
+                        case EstadoBatch.LlenadoAprobado:
+                            @:<span class="badge bg-success">Aprobado</span>
+                            break;
+
+                        case EstadoBatch.LlenadoRechazado:
+                            @:<span class="badge bg-danger">Rechazado</span>
+                            break;
+
+                        case EstadoBatch.RFIDAsignado:
+                            @:<span class="badge bg-info text-white">RFID asignado</span>
+                            break;
+
+                        case EstadoBatch.Consumido:
+                            @:<span class="badge bg-primary">Consumido</span>
+                            break;
+
+                        default:
+                            @:<span class="badge bg-light text-dark">Estado desconocido</span>
+                            break;
+                    }
+                </td>
+
+                <td class="text-center">@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+
+                <!-- ✅ NUEVA COLUMNA -->
+                <td class="text-center">
+                    @( item.Usuario?.UserName ?? "Desconocido")
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td class="text-center">@item.Folio</td>
-                    <td class="text-center">@(item.Componente?.Name ?? "Sin componente")</td>
-                    <td class="text-center">
-                        @switch (item.Estado)
-                        {
-                            case EstadoBatch.PendienteDeLlenado:
-                                @:<span class="badge bg-secondary">Pendiente</span>
-                                break;
-
-                            case EstadoBatch.LlenadoAprobado:
-                                @:<span class="badge bg-success">Aprobado</span>
-                                break;
-
-                            case EstadoBatch.LlenadoRechazado:
-                                @:<span class="badge bg-danger">Rechazado</span>
-                                break;
-
-                            case EstadoBatch.RFIDAsignado:
-                                @:<span class="badge bg-info text-white">RFID asignado</span>
-                                break;
-
-                            case EstadoBatch.Consumido:
-                                @:<span class="badge bg-primary">Consumido</span>
-                                break;
-
-                            default:
-                                @:<span class="badge bg-light text-dark">Estado desconocido</span>
-                                break;
-                        }
-                    </td>
-                    <td class="text-center">@item.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
+        }
+    </tbody>
+</table>
+@* </div>
+ *@
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>

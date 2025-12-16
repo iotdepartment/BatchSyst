@@ -7,6 +7,7 @@
                 <h5 class="modal-title fw-bold" id="nuevoBatchLabel">Nuevo Batch</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
+
             <div class="modal-body">
 
                 <!-- Botón Retrabajo -->
@@ -14,6 +15,40 @@
                     <div class="col-3 text-end">
                         <button id="btnRetrabajo" class="btn btn-outline-danger w-100 p-2" onclick="seleccionarRetrabajo(this)">
                             Retrabajo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Turnos -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="fw-bold">Turno</h5>
+                    </div>
+                </div>
+                <hr />
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary btn-lg w-100 p-4"
+                                data-turno="1"
+                                onclick="seleccionarTurno(this)">
+                            Turno 1
+                        </button>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary btn-lg w-100 p-4"
+                                data-turno="2"
+                                onclick="seleccionarTurno(this)">
+                            Turno 2
+                        </button>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary btn-lg w-100 p-4"
+                                data-turno="3"
+                                onclick="seleccionarTurno(this)">
+                            Turno 3
                         </button>
                     </div>
                 </div>
@@ -89,6 +124,14 @@
     let componenteSeleccionado = null;
     let lineaSeleccionada = null;
     let retrabajoSeleccionado = false;
+    let turnoSeleccionado = null;
+
+    function seleccionarTurno(button) {
+        document.querySelectorAll("[data-turno]").forEach(b => b.classList.remove("active", "btn-selected"));
+        button.classList.add("active", "btn-selected");
+        turnoSeleccionado = button.getAttribute("data-turno");
+        habilitarGuardar();
+    }
 
     function seleccionarComponente(button) {
         document.querySelectorAll("[data-componente]").forEach(b => b.classList.remove("active", "btn-selected"));
@@ -111,7 +154,7 @@
     }
 
     function habilitarGuardar() {
-        if (componenteSeleccionado && lineaSeleccionada) {
+        if (componenteSeleccionado && lineaSeleccionada && turnoSeleccionado) {
             document.getElementById("btnGuardarBatch").disabled = false;
         }
     }
@@ -123,7 +166,8 @@
             body: JSON.stringify({
                 componenteId: componenteSeleccionado,
                 linea: lineaSeleccionada,
-                retrabajo: retrabajoSeleccionado
+                retrabajo: retrabajoSeleccionado,
+                turno: turnoSeleccionado // ✅ SE ENVÍA EL TURNO
             })
         })
         .then(async response => {
@@ -137,22 +181,18 @@
                 return;
             }
 
-            // ✅ ERROR → mostrar toast y NO recargar
             if (!response.ok || data.success === false) {
                 mostrarToast(data.mensaje || "Error al crear el batch", "danger");
                 return;
             }
 
-            // ✅ SUCCESS → guardar mensaje en localStorage
             localStorage.setItem("toastMessage", `Batch creado a las ${data.horaInsertada} (${data.zonaHoraria})`);
             localStorage.setItem("toastType", "success");
 
-            // ✅ Cerrar modal
             const modalEl = document.getElementById('nuevoBatchModal');
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.hide();
 
-            // ✅ Recargar vista para mostrar el toast
             location.reload();
         })
         .catch(err => {
@@ -161,15 +201,12 @@
         });
     }
 
-    // ✅ Mostrar toast guardado en localStorage después del reload
     document.addEventListener("DOMContentLoaded", function () {
         const msg = localStorage.getItem("toastMessage");
         const type = localStorage.getItem("toastType");
 
         if (msg) {
             mostrarToast(msg, type || "success");
-
-            // ✅ Limpiar para que no se repita
             localStorage.removeItem("toastMessage");
             localStorage.removeItem("toastType");
         }

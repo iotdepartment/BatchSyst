@@ -8,14 +8,26 @@
             </div>
 
             <div class="modal-body">
+
+                <!-- ID oculto -->
                 <input id="e_id" type="hidden" />
-                <input id="e_userName" class="form-control mb-2" placeholder="Usuario" />
-                <input id="e_nombre" class="form-control mb-2" placeholder="Nombre" />
+
+                <!-- Usuario -->
+                <label class="form-label fw-semibold">Usuario</label>
+                <input id="e_userName" class="form-control mb-3" placeholder="Usuario" />
+
+                <!-- Nombre -->
+                <label class="form-label fw-semibold">Nombre</label>
+                <input id="e_nombre" class="form-control mb-3" placeholder="Nombre" />
+
+                <!-- Rol -->
+                <label class="form-label fw-semibold">Rol</label>
                 <select id="e_rol" class="form-select">
-                    <option>Admin</option>
-                    <option>Operador</option>
-                    <option>Supervisor</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Operador">Operador</option>
+                    <option value="Supervisor">Supervisor</option>
                 </select>
+
             </div>
 
             <div class="modal-footer">
