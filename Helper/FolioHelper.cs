@@ -6,20 +6,25 @@ namespace Batch.Helper
     {
         public static string CrearFolio(DateTime ahora, int turno, string linea, int componenteId, AppDbContext context, bool retrabajo = false)
         {
-            // ✅ Determinar fecha del folio según tu lógica
             DateTime fechaFolio;
 
-            // ⏰ Entre 00:00 y 06:59
+            // ⏰ Entre 00:00 y 06:59 seguimos en el día laboral anterior
             if (ahora.TimeOfDay < new TimeSpan(7, 0, 0))
             {
-                if (turno == 2)
-                    fechaFolio = ahora.Date.AddDays(-1); // turno 2 → ayer
+                if (turno == 3)
+                {
+                    // ✅ Turno 3 → pertenece al día actual
+                    fechaFolio = ahora.Date;
+                }
                 else
-                    fechaFolio = ahora.Date;            // turno 3 → hoy
+                {
+                    // ✅ Turno 1 o 2 → pertenecen al día laboral anterior
+                    fechaFolio = ahora.Date.AddDays(-1);
+                }
             }
             else
             {
-                // ✅ Horario normal → hoy
+                // ✅ De 07:00 a 23:59 → todos los turnos pertenecen al día actual
                 fechaFolio = ahora.Date;
             }
 
@@ -41,7 +46,7 @@ namespace Batch.Helper
                 _ => "X"
             };
 
-            // ✅ Prefijo del folio (sin consecutivo)
+            // ✅ Prefijo del folio
             string prefijo = $"{yearLetter}{monthLetter}{day}{lineaLetter}";
 
             // ✅ Contar folios existentes con ese prefijo
@@ -54,7 +59,6 @@ namespace Batch.Helper
             // ✅ Folio final
             var folio = prefijo + consecutivo;
 
-            // ✅ Si es retrabajo, anteponer R
             if (retrabajo)
                 folio = "R" + folio;
 
