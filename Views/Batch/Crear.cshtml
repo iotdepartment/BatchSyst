@@ -1,15 +1,13 @@
 ﻿@model IEnumerable<Batch.Models.Lote>
 @using Batch.ViewModels
 
-
 @{
     ViewData["Title"] = "Batches";
-
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-@* 
-<div class="container mt-3 bg-body px-5 pb-5 pt-4 rounded-4 shadow-sm"> *@
+
+@*<div class="container mt-3 bg-body px-5 pb-5 pt-4 rounded-4 shadow-sm">*@
 
     <div class="row mb-3 align-items-end">
 
@@ -21,7 +19,6 @@
             </div>
         </div>
 
-
         <div class="col-3">
             <!-- Filtro por componente -->
             <label for="filtroComponente" class="form-label fw-bold">Filtrar por componente:</label>
@@ -32,19 +29,15 @@
                     <option value="@comp">@comp</option>
                 }
             </select>
-
         </div>
 
     </div>
 
-
     <div id="tabla-lotes-container">
         @Html.Partial("_TablaLotes", Model)
     </div>
-@* </div> *@
 
-
-
+@*</div>*@
 
 @foreach (var lote in Model.Where(l => l.Estado == EstadoBatch.PendienteDeLlenado))
 {
@@ -58,14 +51,12 @@
 
 @await Html.PartialAsync("_ConfirmarEnvioModal")
 
-<!-- Render del partial del modal -->
 @await Html.PartialAsync("_NuevoBatchModal", (NuevoBatchModalViewModel)ViewBag.ModalVm)
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
 
     <script>
         $(document).ready(function () {
@@ -74,7 +65,7 @@
                      url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
                  },
                    pageLength: 10,
-                order: [3, "desc"], // ⚡ ordena por fecha creación descendente
+                order: [0, "desc"], // ⚡ ordena por fecha creación descendente
                  responsive: true,
                  ordering: true,
                  columnDefs: [
@@ -279,7 +270,6 @@
             }
         });
     </script>
-
     <script>
          // Pad numérico
         let currentInput = null;
