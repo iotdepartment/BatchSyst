@@ -72,40 +72,47 @@ namespace Batch.Controllers
             return View(tolerancia);
         }
 
-        // POST: Tolerancias/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Tolerancia tolerancia)
+        public IActionResult EditarAjax([FromBody] Tolerancia tolerancia)
         {
-            if (id != tolerancia.Id)
-            {
+            var db = _context.Tolerancias.FirstOrDefault(t => t.Id == tolerancia.Id);
+
+            if (db == null)
                 return NotFound();
-            }
 
-            if (ModelState.IsValid)
+            // ✅ Convertir valores vacíos, null o "" a 0
+            decimal max = 0;
+            decimal min = 0;
+
+            if (tolerancia.Max.HasValue)
+                max = tolerancia.Max.Value;
+
+            if (tolerancia.Min.HasValue)
+                min = tolerancia.Min.Value;
+
+            // ✅ Asignar valores seguros
+            db.ComponenteId = tolerancia.ComponenteId;
+            db.Prueba = tolerancia.Prueba;
+            db.Max = max;
+            db.Min = min;
+
+            _context.SaveChanges();
+
+            // ✅ Obtener nombre del componente sin que EF evalúe expresiones inválidas
+            var componente = _context.Componentes
+                .Where(c => c.Id == db.ComponenteId)
+                .Select(c => c.Name)
+                .FirstOrDefault();
+
+            return Json(new
             {
-                try
-                {
-                    _context.Update(tolerancia);
-                    _context.SaveChanges();
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Tolerancias.Any(e => e.Id == tolerancia.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            // Si falla la validación, recargar el SelectList
-            ViewData["ComponenteId"] = new SelectList(_context.Componentes, "Id", "Name", tolerancia.ComponenteId);
-            return View(tolerancia);
+                success = true,
+                id = db.Id,
+                componente = componente,
+                prueba = db.Prueba,
+                max = db.Max,
+                min = db.Min
+            });
         }
 
     }

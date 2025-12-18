@@ -219,16 +219,42 @@
             }
         });
 
-        function validar(input, min, max) {
+                function validar(input, min, max) {
             const valor = parseFloat(input.value);
             const estadoCell = document.getElementById(`estado-${input.id.replace("valor-", "")}`);
-            if (!isNaN(valor)) {
-                estadoCell.innerHTML = (valor >= min && valor <= max)
-                    ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
-                    : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>";
-            } else {
+
+            // Si no hay valor, limpiar estado
+            if (isNaN(valor)) {
                 estadoCell.innerHTML = "";
+                return;
             }
+
+            let esValido = false;
+
+            // Convertir min y max a números reales o null
+            min = (min !== null && min !== undefined) ? parseFloat(min) : null;
+            max = (max !== null && max !== undefined) ? parseFloat(max) : null;
+
+            // ✅ Caso 1: Min y Max existen → validar rango normal
+            if (min !== null && max !== null && max > 0) {
+                esValido = valor >= min && valor <= max;
+            }
+            // ✅ Caso 2: Solo Min existe → validar hacia arriba
+            else if (min !== null && (max === null || max === 0)) {
+                esValido = valor >= min;
+            }
+            // ✅ Caso 3: Solo Max existe → validar hacia abajo
+            else if (min === null && max !== null) {
+                esValido = valor <= max;
+            }
+            // ✅ Caso 4: No hay límites → siempre válido
+            else {
+                esValido = true;
+            }
+
+            estadoCell.innerHTML = esValido
+                ? "<span class='badge bg-success rounded-pill px-3'>OK</span>"
+                : "<span class='badge bg-danger rounded-pill px-3'>FAIL</span>";
         }
 
         function mostrarToast(mensaje, tipo = "success") {

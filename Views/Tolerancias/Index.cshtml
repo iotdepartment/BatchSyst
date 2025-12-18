@@ -15,10 +15,8 @@
                 <a asp-action="Create" class="btn btn-primary rounded-pill">Nueva Tolerancia <i class="bi bi-plus-circle"></i></a>
             </div>
         </div>
-        
-        <div class="col-3">
-            <!-- Filtro por componente -->
 
+        <div class="col-3">
             <label for="filtroComponente" class="form-label fw-bold">Filtrar por componente:</label>
             <select id="filtroComponente" class="form-select rounded-pill">
                 <option value="">Todos</option>
@@ -27,9 +25,8 @@
                     <option value="@comp">@comp</option>
                 }
             </select>
-
         </div>
-   
+
     </div>
 
     <table id="tablaTolerancias" class="table table-striped table-bordered">
@@ -53,7 +50,14 @@
                     <td>@item.Max</td>
                     <td>@item.Min</td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Editar</a>
+                        <button class="btn btn-warning btn-sm btn-editar"
+                                data-id="@item.Id"
+                                data-componente="@item.ComponenteId"
+                                data-prueba="@item.Prueba"
+                                data-max="@item.Max"
+                                data-min="@item.Min">
+                            Editar
+                        </button>
                     </td>
                 </tr>
             }
@@ -62,6 +66,9 @@
 
 </div>
 
+<!-- ✅ Modal fuera del container -->
+@await Html.PartialAsync("_EditarToleranciaModal", Model)
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -69,6 +76,7 @@
 
     <script>
         $(document).ready(function () {
+
             var table = $('#tablaTolerancias').DataTable({
                 language: {
                     url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
@@ -77,14 +85,68 @@
                 responsive: true,
                 ordering: true,
                 columnDefs: [
-                    { orderable: false, targets: [5] } // ⚡ evita ordenar la columna de acción
+                    { orderable: false, targets: [5] }
                 ]
             });
 
-            // Filtro por componente
             $('#filtroComponente').on('change', function () {
                 var valor = $(this).val();
-                table.column(1).search(valor).draw(); // columna 1 = Componente
+                table.column(1).search(valor).draw();
+            });
+
+        });
+    </script>
+
+    <script>
+        // ✅ Abrir modal y cargar datos
+        $(document).on("click", ".btn-editar", function () {
+
+            $("#edit-id").val($(this).data("id"));
+            $("#edit-componente").val($(this).data("componente"));
+            $("#edit-prueba").val($(this).data("prueba"));
+            $("#edit-max").val($(this).data("max"));
+            $("#edit-min").val($(this).data("min"));
+
+            var modal = new bootstrap.Modal(document.getElementById("modalEditarTolerancia"));
+            modal.show();
+        });
+
+        // ✅ Guardar por AJAX y actualizar fila sin recargar
+        $(document).on("submit", "#formEditarTolerancia", function (e) {
+            e.preventDefault();
+
+            const data = {
+                Id: $("#edit-id").val(),
+                ComponenteId: $("#edit-componente").val(),
+                Prueba: $("#edit-prueba").val(),
+                Max: $("#edit-max").val(),
+                Min: $("#edit-min").val()
+            };
+
+            $.ajax({
+                url: "/Tolerancias/EditarAjax",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (resp) {
+                    if (resp.success) {
+
+                        let row = $("#tablaTolerancias")
+                            .DataTable()
+                            .row($(`button[data-id='${resp.id}']`).closest("tr"));
+
+                        row.data([
+                            resp.id,
+                            resp.componente,
+                            resp.prueba,
+                            resp.max,
+                            resp.min,
+                            row.data()[5]
+                        ]).draw(false);
+
+                        bootstrap.Modal.getInstance(document.getElementById("modalEditarTolerancia")).hide();
+                    }
+                }
             });
         });
     </script>

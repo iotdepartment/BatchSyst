@@ -53,7 +53,11 @@
                                            style="font-size: 1.4rem; padding: 1rem 1.2rem;"
                                            readonly
                                            @(Model.Estado != EstadoBatch.PendienteDeLlenado ? "disabled" : "")
-                                           onclick="abrirPad(@resultado.Id, @resultado.Tolerancia.Min, @resultado.Tolerancia.Max)" />
+                                           onclick="abrirPad(
+                                               @resultado.Id,
+                                               @(resultado.Tolerancia.Min.HasValue? resultado.Tolerancia.Min.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null"),
+                                               @(resultado.Tolerancia.Max.HasValue? resultado.Tolerancia.Max.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null")
+                                           )" />
                                 </div>
                             }
                         </div>

@@ -181,9 +181,40 @@ namespace Batch.Controllers
                 if (resultado != null)
                 {
                     resultado.Valor = r.Valor;
-                    resultado.EsValido = resultado.Valor.HasValue &&
-                                         resultado.Valor >= resultado.Tolerancia.Min &&
-                                         resultado.Valor <= resultado.Tolerancia.Max;
+
+                    if (resultado.Valor.HasValue)
+                    {
+                        // ✅ Convertir float → decimal
+                        decimal valor = (decimal)resultado.Valor.Value;
+
+                        decimal? min = resultado.Tolerancia.Min;
+                        decimal? max = resultado.Tolerancia.Max;
+
+                        // ✅ Caso 1: Min y Max existen → validar rango normal
+                        if (min.HasValue && max.HasValue && max.Value > 0)
+                        {
+                            resultado.EsValido = valor >= min.Value && valor <= max.Value;
+                        }
+                        // ✅ Caso 2: Solo Min existe → validar hacia arriba
+                        else if (min.HasValue && (!max.HasValue || max.Value == 0))
+                        {
+                            resultado.EsValido = valor >= min.Value;
+                        }
+                        // ✅ Caso 3: Solo Max existe → validar hacia abajo
+                        else if (!min.HasValue && max.HasValue)
+                        {
+                            resultado.EsValido = valor <= max.Value;
+                        }
+                        // ✅ Caso 4: No hay límites → siempre válido
+                        else
+                        {
+                            resultado.EsValido = true;
+                        }
+                    }
+                    else
+                    {
+                        resultado.EsValido = false;
+                    }
                 }
             }
 
@@ -191,7 +222,7 @@ namespace Batch.Controllers
 
             bool enviado = false;
 
-            // Si se presionó "Enviar"
+            // ✅ Si se presionó "Enviar"
             if (request.Enviar)
             {
                 enviado = true;
@@ -202,6 +233,7 @@ namespace Batch.Controllers
 
                 if (lote != null)
                 {
+                    // ✅ Completar valores faltantes
                     foreach (var res in lote.Resultados)
                     {
                         if (!res.Valor.HasValue)
@@ -211,6 +243,7 @@ namespace Batch.Controllers
                         }
                     }
 
+                    // ✅ Determinar estado del lote
                     lote.Estado = lote.Resultados.All(r => r.EsValido)
                         ? EstadoBatch.LlenadoAprobado
                         : EstadoBatch.LlenadoRechazado;

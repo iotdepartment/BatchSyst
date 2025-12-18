@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Batch.Models.Tolerancia>
+
+<div class="modal fade" id="modalEditarTolerancia" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">Editar Tolerancia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="formEditarTolerancia">
+
+                    <input type="hidden" id="edit-id" name="Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Componente</label>
+                        <select id="edit-componente" name="ComponenteId" class="form-select rounded-pill">
+                            @foreach (var item in Model.Select(m => m.Componente).Distinct())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Prueba</label>
+                        <input id="edit-prueba" name="Prueba" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Max</label>
+                        <input id="edit-max" name="Max" type="number" step="0.01" class="form-control rounded-pill" required/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Min</label>
+                        <input id="edit-min" name="Min" type="number" step="0.01" class="form-control rounded-pill" required />
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success rounded-pill px-4">Guardar</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

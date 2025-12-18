@@ -57,9 +57,6 @@ namespace Batch.Controllers
 
 
     }
-
-
-
     public class EvaluarPruebaRequest
     {
         public int ResultadoId { get; set; }
