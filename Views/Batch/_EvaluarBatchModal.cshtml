@@ -49,7 +49,7 @@
                                     <input type="text"
                                            id="valor-@resultado.Id"
                                            value="@(resultado.Valor.HasValue? resultado.Valor.ToString() : "")"
-                                           class="form-control form-control-lg text-center rounded-pill mt-2 fw-bold"
+                                           class="form-control form-control-lg text-center rounded-pill border-2 border-dark-subtle mt-2 fw-bold"
                                            style="font-size: 1.4rem; padding: 1rem 1.2rem;"
                                            readonly
                                            @(Model.Estado != EstadoBatch.PendienteDeLlenado ? "disabled" : "")

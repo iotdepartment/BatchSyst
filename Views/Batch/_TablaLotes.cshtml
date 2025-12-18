@@ -88,14 +88,7 @@
                             <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
                                 @foreach (var resultado in item.Resultados)
                                 {
-                                    <span class="badge
-                                                        @(resultado.Valor == null
-                                                                                      ? "bg-secondary"
-                                                                                      : resultado.EsValido == true
-                                                                                          ? "bg-success"
-                                                                                          : "bg-danger")
-                                        text-white rounded-pill">
-
+                                    <span class="badge @(resultado.Valor == null ? "bg-secondary" : resultado.EsValido == true ? "bg-success" : "bg-danger") text-white rounded-pill">
                                         @resultado.Tolerancia.Prueba
                                     </span>
                                         }

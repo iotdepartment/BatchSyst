@@ -153,7 +153,6 @@ namespace Batch.Controllers
             });
         }
 
-
         // Vista para capturar las pruebas de un lote
         [HttpGet]
         public IActionResult Evaluar(int id)

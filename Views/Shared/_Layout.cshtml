@@ -45,6 +45,17 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
 </head>
 <body class="bg-body-tertiary">
     <header class="">
+        @functions {
+            bool IsActive(string controller, string action)
+            {
+                var routeData = ViewContext.RouteData.Values;
+                string currentController = routeData["controller"]?.ToString() ?? "";
+                string currentAction = routeData["action"]?.ToString() ?? "";
+
+                return currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
+                && currentAction.Equals(action, StringComparison.OrdinalIgnoreCase);
+            }
+        }
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container">
                 <!-- Logo -->
@@ -64,54 +75,62 @@ bool isLoginPage = currentController == "Auth" && currentAction == "Login";
 
                         <!-- Dropdown Batch -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="batchDropdown"
-                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            <a class="nav-link dropdown-toggle fw-semibold
+            @(IsActive("Batch", "Lista") || IsActive("Batch", "Crear")
+                                               ? "bg-primary text-white fw-bold rounded"
+                                               : "text-dark")"
+                               href="#" id="batchDropdown"
+                               role="button" data-bs-toggle="dropdown">
                                 Batch
                             </a>
+
                             <ul class="dropdown-menu" aria-labelledby="batchDropdown">
+
                                 <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="Batch" asp-action="Lista">
+                                    <a class="dropdown-item @(IsActive("Batch", "Lista")
+                                                               ? "bg-primary text-white fw-bold rounded"
+                                                               : "")"
+                                       asp-area="" asp-controller="Batch" asp-action="Lista">
                                         Registro de Batches
                                     </a>
                                 </li>
+
                                 <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="Batch" asp-action="Crear">
+                                    <a class="dropdown-item @(IsActive("Batch", "Crear")
+                                                               ? "bg-primary text-white fw-bold rounded"
+                                                               : "")"
+                                       asp-area="" asp-controller="Batch" asp-action="Crear">
                                         Nuevo Batch
                                     </a>
                                 </li>
-                               
                             </ul>
                         </li>
 
                         <!-- Link Tolerancias -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Tolerancias" asp-action="Index">
+                            <a class="nav-link fw-semibold
+            @(IsActive("Tolerancias", "Index")
+                                               ? "bg-primary text-white fw-bold rounded"
+                                               : "text-dark")"
+                               asp-area="" asp-controller="Tolerancias" asp-action="Index">
                                 Tolerancias
                             </a>
                         </li>
+
                         @if (User.IsInRole("Admin"))
-                            {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Usuarios" asp-action="Index">
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold
+                    @(IsActive("Usuarios", "Index")
+                                                       ? "bg-primary text-white fw-bold rounded"
+                                                       : "text-dark")"
+                               asp-area="" asp-controller="Usuarios" asp-action="Index">
                                 Usuarios
                             </a>
                         </li>
-                            }
+                                                }
                     </ul>
-                    <!--
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown"
-                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> Usuario
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#">Perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Configuración</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#">Cerrar sesión</a></li>
-                        </ul>
-                    </li>
-                    -->
                     <!-- Usuario / Perfil -->
                     <ul class="navbar-nav ms-auto">
 
